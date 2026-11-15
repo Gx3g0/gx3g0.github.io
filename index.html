@@ -510,9 +510,17 @@ function startRec(stream){const mr=new MediaRecorder(stream);const ch=[];mr.onda
 
 /* ================= EFFETS (toasts, confettis, ripple, tilt) ================= */
 const fx={
+  _ac:null,
+  sfx(kind){try{const A=this._ac||(this._ac=new (window.AudioContext||window.webkitAudioContext)());A.resume();const t0=A.currentTime+.01;
+    const notes=kind==='win'?[[523.25,0],[659.25,.09],[783.99,.18],[1046.5,.27],[1318.5,.4]]:[[880,0],[1318.5,.08]];
+    notes.forEach(([f,d],i)=>{const o=A.createOscillator(),g=A.createGain();o.type=i%2?'triangle':'sine';o.frequency.setValueAtTime(f,t0+d);g.gain.setValueAtTime(0,t0+d);g.gain.linearRampToValueAtTime(kind==='win'?.16:.13,t0+d+.012);g.gain.exponentialRampToValueAtTime(.0005,t0+d+(kind==='win'?.55:.32));o.connect(g).connect(A.destination);o.start(t0+d);o.stop(t0+d+.6)})}catch(e){}},
+  pop(e){if(!document.getElementById('fxpopcss')){const st=document.createElement('style');st.id='fxpopcss';st.textContent='.fxpop{position:fixed;left:50%;top:42%;z-index:9999;pointer-events:none;font-size:46px;transform:translate(-50%,-50%) scale(.2);animation:fxpop .9s cubic-bezier(.2,.9,.3,1.3) forwards;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}@keyframes fxpop{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-20deg)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(8deg)}70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-95%) scale(.9)}}.fxspark{position:fixed;left:50%;top:42%;z-index:9998;width:10px;height:10px;border-radius:50%;pointer-events:none;animation:fxspark .7s ease-out forwards}@keyframes fxspark{from{opacity:1;transform:translate(-50%,-50%)}to{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3)}}';document.head.appendChild(st)}
+    const d=document.createElement('div');d.className='fxpop';d.textContent=e||'✅';document.body.appendChild(d);setTimeout(()=>d.remove(),950);
+    const cols=['#ffcf3f','#3ddc84','#4d96ff','#ff6b9a','#8f7bff'];for(let i=0;i<14;i++){const sp=document.createElement('span');sp.className='fxspark';const a=i/14*Math.PI*2,r=70+Math.random()*50;sp.style.cssText+=`--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px;background:${cols[i%cols.length]}`;document.body.appendChild(sp);setTimeout(()=>sp.remove(),750)}},
+  ok(e){this.sfx('ok');this.pop(e)},
   toast(m){const c=$('#toasts');if(!c)return;const d=document.createElement('div');d.className='toast';d.innerHTML=m;c.appendChild(d);setTimeout(()=>d.remove(),2900)},
   shake(el){if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')},
-  confetti(){const cv=$('#confetti');if(!cv)return;const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const cols=['#ffcf3f','#ff6b9a','#8f7bff','#3ddc84','#4d96ff','#ffffff'];
+  confetti(){this.sfx('win');this.pop('🏆');const cv=$('#confetti');if(!cv)return;const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const cols=['#ffcf3f','#ff6b9a','#8f7bff','#3ddc84','#4d96ff','#ffffff'];
     const P=Array.from({length:180},(_,i)=>({x:innerWidth*(i%2?.25:.75),y:innerHeight*.45,vx:(Math.random()-.5)*18+(i%2?4:-4),vy:-Math.random()*16-6,s:5+Math.random()*7,r:Math.random()*6,vr:(Math.random()-.5)*.35,c:cols[i%cols.length]}));
     let f=0;const step=()=>{ctx.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.vy+=.38;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=Math.max(0,1-f/200);ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore()});if(++f<200)requestAnimationFrame(step);else ctx.clearRect(0,0,cv.width,cv.height)};step()}
 };
@@ -633,7 +641,7 @@ GAME_IMPL.loyer=root=>{
       const g=Math.max(0,+rn.value||0),pts=Math.round(1000*Math.max(0,1-Math.abs(g-h.p)/h.p));total+=pts;
       rg.disabled=rn.disabled=true;$('#ok').remove();const last=i===N-1;
       $('#res').innerHTML=`<div class="result fade"><div>${t('loy_yours')} : <b>${fmt(g)} €</b> · ${t('loy_real')} : <b style="color:var(--accent)">${fmt(h.p)} €</b></div><div class="big" style="color:${pts>700?'var(--good)':pts>350?'var(--mid)':'var(--bad)'}">${t('loy_pts',{n:pts})}</div><div class="actions"><button class="primary" id="nx">${t('next')} →</button></div></div>`;
-      if(pts>=800)fx.toast('🎯 +'+pts);
+      if(pts>=800){fx.toast('🎯 +'+pts);fx.ok('🎯')}
       $('#nx').onclick=()=>{if(last)end();else{i++;show()}};
     };
   }
@@ -832,7 +840,7 @@ GAME_IMPL.pedanto=root=>{
       if(!keys.includes(k)){const tl=tol(k.length);if(tl){let best=null,bd=99;for(const kk of keys){if(Math.abs(kk.length-k.length)>tl)continue;const d=lev(k,kk);if(d<=tl&&d<bd){bd=d;best=kk}}if(best){k=best;fix=ALL.find(o=>o.k===best).s}}}
       if(fix&&rev.has(k)){$('#msg').textContent='↩︎ '+fix;return}
       const c=keys.includes(k)?count(k):0;fresh=new Set();$('#msg').textContent='';
-      if(c){rev.add(k);fresh.add(k);delete st.near[k];st.g.push({w:v,k,c,fix});if(fix)fx.toast(`✏️ « ${esc(v)} » → « ${esc(fix)} »`)}
+      if(c){rev.add(k);fresh.add(k);delete st.near[k];st.g.push({w:v,k,c,fix});fx.ok('✨');if(fix)fx.toast(`✏️ « ${esc(v)} » → « ${esc(fix)} »`)}
       else{
         st.g.push({w:v,k:null,c:0,fix:null});
         const hidden=keys.filter(x=>!rev.has(x)&&x.length>=3);const sc={};
@@ -1197,7 +1205,7 @@ GAME_IMPL.taille=root=>{
       locked=true;hd.remove();const gm=h/FH*H,r=T[2],pts=Math.round(1000*Math.max(0,1-Math.abs(Math.log10(gm/r))/0.4));total+=pts;
       tg.insertAdjacentHTML('beforeend',`<div class="gl real" style="bottom:${Math.min(FH,px(r))}px"><span>${t('tai_real')} : ${fmtLen(r)}</span></div>`);
       requestAnimationFrame(()=>{tgt.style.transition='';tgt.querySelector('.te').style.transition='';sz(tgt,Math.min(FH,px(r)))});
-      $('#ok').remove();const last=i===N-1;if(pts>=800)fx.toast('🎯 +'+pts);
+      $('#ok').remove();const last=i===N-1;if(pts>=800){fx.toast('🎯 +'+pts);fx.ok('🎯')}
       $('#res').innerHTML=`<div class="result fade"><div>${t('tai_yours')} : <b>${fmtLen(gm)}</b> · ${t('tai_real')} : <b style="color:var(--accent)">${fmtLen(r)}</b></div><div class="big" style="color:${pts>700?'var(--good)':pts>350?'var(--mid)':'var(--bad)'}">+${pts}</div><div class="actions"><button class="primary" id="nx">${t('next')} →</button></div></div>`;
       $('#nx').onclick=()=>{if(last)end();else{i++;show()}};
     };
@@ -1455,7 +1463,7 @@ function qaGame(root,mode){
     $('#sk').onclick=()=>finish(null);
     $('#f').onsubmit=async e=>{e.preventDefault();if(busy||inp.disabled)return;const v=inp.value.trim();if(!v)return;const k=qn(v);
       const idx=Q.ans.findIndex(a=>a.includes(k));
-      if(idx>=0)return finish(idx/(Q.ans.length-1),Q.disp[idx],false,idx);
+      if(idx>=0){fx.ok(mode==='abyss'?'🤿':'🚀');return finish(idx/(Q.ans.length-1),Q.disp[idx],false,idx)}
       if(SAMPLE){busy=true;$('#msg').textContent=t('qa_check');
         const r=await askClaude(`Game like "Pointless"/"Family Feud" in ${c==='fr'?'French':'English'}. Question: "${Q.q}". A player answered: "${v}". Reply ONLY with JSON {"valid":boolean,"popularity":number}. valid=true only if it is a correct answer to the question. popularity 0-100 = how often a random group of 100 ${c==='fr'?'French':'English'}-speaking people would give this answer (the most obvious answers ~90-100, rare but correct answers ~1-10).`);
         busy=false;if(!root.isConnected)return;$('#msg').textContent='';
@@ -1617,7 +1625,7 @@ GAME_IMPL.blind=root=>{
     const tr=cur.tr,o=cur.o;if(win){fx.confetti();fx.toast(`🎉 +${pts}`)}
     $('#rv').innerHTML=`<div class="bt-reveal"><img src="${esc(tr.album.cover_medium)}" alt=""><div><div class="big">${win?(fr?'Trouvé en ':'Found in ')+String(STEPS[step][0]).replace('.',fr?',':'.')+' s ! +'+pts:(fr?'Perdu !':'You lose!')}</div><div style="font-size:1.2rem;font-weight:800">${esc(tr.title)} — ${esc(tr.artist.name)}</div><div style="opacity:.75;margin:2px 0 4px">${BT_GENRES[o.g].e} ${BT_GENRES[o.g][fr?'fr':'en']} · ${o.y}</div><a href="${esc(tr.link)}" target="_blank" rel="noopener" style="color:#ffb3d9;text-decoration:underline">${fr?'Écouter sur Deezer':'Listen on Deezer'} ↗</a></div></div>`;
     $('#act').innerHTML=`<button class="primary" id="nx">🎵 ${fr?'Musique suivante':'Next song'}</button><button id="ls">🔊 ${fr?"Réécouter l'extrait":'Replay clip'}</button>`;
-    $('#nx').onclick=()=>{stop();newRound()};$('#ls').onclick=()=>play(30);play(10);}
+    $('#nx').onclick=()=>{stop();newRound()};$('#ls').onclick=()=>play(30);play(30);}
   function lose(){reveal(false)}
   $('#pl').onclick=()=>{if(src){stop();return}if(!cur)return;play(over?30:STEPS[step][0])};
   $('#cf').onclick=openSetup;
@@ -1700,7 +1708,7 @@ GAME_IMPL.top10=root=>{
       let idx=A.findIndex(a=>a.keys.includes(k));
       if(idx<0){let bd=99;A.forEach((a,i)=>a.keys.forEach(x=>{const tl=tol(x.length);if(!tl||Math.abs(x.length-k.length)>tl)return;const d=lev(k,x);if(d<=tl&&d<bd){bd=d;idx=i}}))}
       if(idx>=0&&found.has(idx)){$('#msg').textContent=t('top_dupe');fx.shake(inp);return}
-      if(idx>=0){found.add(idx);$('#msg').innerHTML=`<span style="color:var(--good)">✅ n°${idx+1}</span>`;draw(idx);if(idx===0)fx.toast(`🥇 ${esc(name(A[0]))}`);if(found.size===10)finish();return}
+      if(idx>=0){found.add(idx);if(found.size<10)fx.ok('✅');$('#msg').innerHTML=`<span style="color:var(--good)">✅ n°${idx+1}</span>`;draw(idx);if(idx===0)fx.toast(`🥇 ${esc(name(A[0]))}`);if(found.size===10)finish();return}
       lives--;$('#msg').innerHTML=`<span style="color:var(--bad)">❌ ${t('top_miss')}</span>`;fx.shake($('#tb'));draw(-1);if(lives<=0)finish();};
   }
 };
