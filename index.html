@@ -464,7 +464,7 @@ const GAMES=[
 {id:'taille',emoji:'📏',color:'#3ddc84',tags:['solo','guess'],insp:'Guess the Size',name:{fr:'Quelle Taille ?',en:'How Big?',es:'¿Qué Tamaño?',de:'Wie Groß?'},desc:{fr:"Étire l'objet dans un cadre quadrillé pour retrouver sa vraie taille.",en:"Stretch the object on a grid to find its real size.",es:"Estira el objeto en una cuadrícula hasta su tamaño real.",de:"Zieh das Objekt im Raster auf seine echte Größe."}},
 {id:'abysse',emoji:'🤿',color:'#00b4d8',tags:['solo','words'],insp:null,name:{fr:'Abysse',en:'Abyss',es:'Abismo',de:'Abgrund'},desc:{fr:"Réponds le mot le MOINS cité : plus c'est rare, plus ton plongeur descend.",en:"Give the LEAST common answer: the rarer, the deeper you dive.",es:"Da la respuesta MENOS común: cuanto más rara, más profundo.",de:"Gib die SELTENSTE Antwort: je seltener, desto tiefer."}},
 {id:'space',emoji:'🚀',color:'#7b61ff',tags:['solo','words'],insp:null,name:{fr:'Space',en:'Space',es:'Space',de:'Space'},desc:{fr:"Le contraire d'Abysse : réponds le mot le PLUS cité pour décoller le plus haut.",en:"The opposite of Abyss: give the MOST common answer to fly highest.",es:"Lo contrario de Abismo: da la respuesta MÁS común.",de:"Das Gegenteil von Abgrund: gib die HÄUFIGSTE Antwort."}},
-{id:'blind',emoji:'🎧',color:'#ff4fa3',tags:['party','guess'],insp:null,name:{fr:'Blind Test Couches',en:'Layered Blind Test',es:'Blind Test por capas',de:'Schicht-Blindtest'},desc:{fr:"Percus, puis basses, puis instruments, puis voix : trouve la musique le plus tôt possible.",en:'Drums, then bass, then instruments, then vocals: name the song as early as you can.',es:'Percusión, bajo, instrumentos y voz: adivina la canción cuanto antes.',de:'Drums, Bass, Instrumente, Gesang: errate den Song so früh wie möglich.'}},
+{id:'blind',emoji:'🎧',color:'#ff4fa3',tags:['party','guess'],insp:null,name:{fr:'Blind Test Éclair',en:'Flash Blind Test',es:'Blind Test Relámpago',de:'Blitz-Blindtest'},desc:{fr:"Reconnais une musique connue en 0,1 seconde… sinon 0,5 s, 1 s, 5 s, jusqu'à 30 s.",en:'Recognise a famous song in 0.1 second… or 0.5 s, 1 s, 5 s, up to 30 s.',es:'Reconoce una canción en 0,1 segundos… o hasta 30 s.',de:'Erkenne einen Hit in 0,1 Sekunden… oder bis zu 30 s.'}},
 {id:'top10',emoji:'🔟',color:'#ff9f1c',tags:['solo','guess','words'],insp:null,name:{fr:'Top 10',en:'Top 10',es:'Top 10',de:'Top 10'},desc:{fr:"Une question au hasard, un classement caché : trouve les 10 réponses les plus citées, connues ou recherchées.",en:'One question, a hidden ranking: find the 10 most popular answers.',es:'Una pregunta, un ranking oculto: encuentra las 10 respuestas.',de:'Eine Frage, ein verstecktes Ranking: finde die 10 Antworten.'}},
 {id:'motus',emoji:'🟥',color:'#e8484b',tags:['solo','words'],insp:'Sutom / Wordle',name:{fr:'Mot Mystère',en:'Mystery Word',es:'Palabra Misteriosa',de:'Geheimwort'},desc:{fr:"Trouve le mot : de 5 à 8 lettres, 3 niveaux de difficulté.",en:"Find the word: 5 to 8 letters, 3 difficulty levels.",es:"Encuentra la palabra: de 5 a 8 letras, 3 niveles.",de:"Finde das Wort: 5 bis 8 Buchstaben, 3 Stufen."}}
 ];
@@ -1436,60 +1436,71 @@ GAME_IMPL.motus=root=>{
 /* =====================================================================
    12. BLIND TEST COUCHES — l'extrait officiel Deezer, filtré couche par couche
    ===================================================================== */
-const BT_SONGS=[{id:536421002,a:['sicko mode','sicko','sicko mod','sickomode']}];
+/* Musiques : "Artiste|Titre|alias|alias…" — l'extrait officiel est cherché sur Deezer */
+const BT_SONGS=["Travis Scott|SICKO MODE|sicko","The Weeknd|Blinding Lights","Ed Sheeran|Shape of You","Michael Jackson|Billie Jean","Queen|Bohemian Rhapsody","Nirvana|Smells Like Teen Spirit|smells like teen spirit|teen spirit","Adele|Rolling in the Deep","Mark Ronson|Uptown Funk","Billie Eilish|bad guy","Luis Fonsi|Despacito","PSY|Gangnam Style","Pharrell Williams|Happy","Daft Punk|Get Lucky","Dua Lipa|Levitating","Miley Cyrus|Flowers","Harry Styles|As It Was","Lil Nas X|Old Town Road","Eminem|Lose Yourself","Drake|Hotline Bling","Drake|God's Plan|gods plan","Kendrick Lamar|HUMBLE.|humble","The Weeknd|Starboy","Michael Jackson|Thriller","Toto|Africa","a-ha|Take On Me","The White Stripes|Seven Nation Army","Imagine Dragons|Believer","Taylor Swift|Shake It Off","Tones And I|Dance Monkey","The Kid LAROI|STAY","Guns N' Roses|Sweet Child O' Mine|sweet child of mine|sweet child","OutKast|Hey Ya!|hey ya","Beyoncé|Crazy In Love","Rihanna|Umbrella","Britney Spears|Toxic","Drake|One Dance","Sabrina Carpenter|Espresso","ROSÉ|APT.|apt|apartment","Lady Gaga|Die With A Smile","BTS|Dynamite","Coldplay|Viva La Vida","Avicii|Wake Me Up","Gotye|Somebody That I Used To Know","Survivor|Eye of the Tiger","Bon Jovi|Livin' On A Prayer|livin on a prayer|living on a prayer","AC/DC|Highway to Hell","Aya Nakamura|Djadja","Angèle|Tout oublier","Stromae|Alors on danse","Stromae|Papaoutai","13 Organisé|Bande organisée|bande organisee","Jul|Tchikita","Naps|La kiffance","GIMS|Bella","GIMS|Sapés comme jamais|sapes comme jamais","Johnny Hallyday|Je te promets","Joe Dassin|Les Champs-Élysées|les champs elysees|champs elysees","Indila|Dernière danse|derniere danse","Alizée|Moi... Lolita|moi lolita|lolita","PNL|Au DD","Orelsan|Basique","Booba|DKR","Céline Dion|My Heart Will Go On","Vianney|Pas là","Louane|Jour 1","Soprano|En feu","Ninho|Jefe","Aya Nakamura|Pookie","Indochine|L'aventurier|laventurier|l aventurier","Charles Aznavour|La bohème|la boheme","Edith Piaf|La vie en rose","Black Eyed Peas|I Gotta Feeling","Shakira|Hips Don't Lie|hips dont lie","Calvin Harris|Summer","Kungs|This Girl","Lady Gaga|Bad Romance","Katy Perry|Roar","Bruno Mars|Just The Way You Are","Linkin Park|Numb","Arctic Monkeys|Do I Wanna Know?|do i wanna know"];
 function dzJsonp(path){return new Promise((res,rej)=>{const cb='dz'+Date.now()+Math.floor(Math.random()*1e4);const sc=document.createElement('script');const to=setTimeout(()=>{cleanupCb();rej(new Error('timeout'))},9000);function cleanupCb(){clearTimeout(to);try{delete window[cb]}catch(e){}sc.remove()}window[cb]=d=>{cleanupCb();res(d)};sc.src='https://api.deezer.com'+path+(path.includes('?')?'&':'?')+'output=jsonp&callback='+cb;sc.onerror=()=>{cleanupCb();rej(new Error('net'))};document.head.appendChild(sc)})}
 GAME_IMPL.blind=root=>{
-  const STEPS=[{e:'🥁',fr:'Percussions',en:'Drums',pts:1000},{e:'🎸',fr:'+ Basses',en:'+ Bass',pts:600},{e:'🎹',fr:'+ Instruments',en:'+ Instruments',pts:300},{e:'🎤',fr:'+ Voix (complet)',en:'+ Vocals (full)',pts:100}];
   const fr=lang==='fr';
-  let ctx=null,buf=null,track=null,src=null,an=null,raf=0,step=0,over=false,tries=0;
-  const song=BT_SONGS[Math.floor(Math.random()*BT_SONGS.length)];
-  cleanups.push(()=>{try{src&&src.stop()}catch(e){}cancelAnimationFrame(raf);try{ctx&&ctx.close()}catch(e){}});
-  root.innerHTML=`<p class="intro">${fr?"Écoute l'extrait couche par couche : d'abord les percussions, puis les basses, les instruments et enfin la voix. Plus tu trouves tôt, plus tu gagnes de points !":'Listen layer by layer: drums first, then bass, instruments and finally vocals. The earlier you guess, the more points!'}</p>
-  <div class="bt-stage"><canvas id="viz"></canvas>
-  <div class="bt-steps">${STEPS.map((x,i)=>`<div class="bt-step" data-i="${i}">${x.e} ${fr?x.fr:x.en}<span class="pt">${x.pts} pts</span></div>`).join('')}</div>
-  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><button class="bt-play" id="pl">▶</button><div style="flex:1;min-width:200px"><form id="f" class="inrow"><input id="w" placeholder="${fr?'Titre de la musique…':'Song title…'}" autocomplete="off"><button class="primary">${t('validate')}</button></form><div class="msg" id="msg"></div></div></div>
-  <div class="actions"><button id="nx">⏭️ ${fr?'Couche suivante':'Next layer'}</button><button id="gu">🏳️ ${fr?'Révéler':'Reveal'}</button></div>
-  <div id="rv"></div><div class="bt-credit">${fr?'Extrait officiel fourni par Deezer':'Official preview provided by Deezer'}</div></div>`;
+  const STEPS=[[.1,1000],[.5,800],[1,600],[5,400],[10,250],[15,150],[30,50]];
+  const key=x=>norm(x).replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+  const lev=(a,b)=>{const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>{const r=new Array(n+1).fill(0);r[0]=i;return r});for(let j=0;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){const c=a[i-1]===b[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1)}return d[m][n]};
+  let ctx=null,cur=null,src=null,raf=0,step=0,over=false,score=0,round=0,bag=[],nextP=null,alive=true;
+  cleanups.push(()=>{alive=false;try{src&&src.stop()}catch(e){}cancelAnimationFrame(raf);try{ctx&&ctx.close()}catch(e){}});
+  const pick=()=>{if(!bag.length)bag=shuffle(BT_SONGS.map((_,i)=>i));return BT_SONGS[bag.pop()]};
+  async function loadSong(entry){
+    const [artist,title,...al]=entry.split('|');
+    const d=await dzJsonp('/search?q='+encodeURIComponent(`artist:"${artist}" track:"${title}"`)+'&limit=5');
+    let tr=(d.data||[]).find(x=>x.preview&&key(x.artist.name).includes(key(artist).slice(0,5)))||(d.data||[]).find(x=>x.preview);
+    if(!tr){const d2=await dzJsonp('/search?q='+encodeURIComponent(artist+' '+title)+'&limit=5');tr=(d2.data||[]).find(x=>x.preview)}
+    if(!tr)throw new Error('notfound');
+    const ab=await (await fetch(tr.preview)).arrayBuffer();
+    return{tr,ab,keys:[title,...al].map(key).filter(Boolean),artist,title};
+  }
+  root.innerHTML=`<p class="intro">${fr?"Reconnais la musique le plus vite possible : 0,1 s, puis 0,5 s, 1 s, 5 s, 10 s, 15 s et 30 s. Une mauvaise réponse (ou « Passer ») débloque l'extrait suivant. Pas trouvé après 30 s ? Perdu !":'Name the song as fast as possible: 0.1 s, then 0.5 s, 1 s, 5 s, 10 s, 15 s and 30 s. A wrong answer (or Skip) unlocks the next clip. Not found after 30 s? You lose!'}</p>
+  <div class="bt-stage">
+   <div class="bar" style="background:rgba(0,0,0,.25)"><span>🎵 ${fr?'Musique':'Song'} <b id="rd">1</b></span><span>${t('score')} : <b id="sc">0</b></span></div>
+   <canvas id="viz"></canvas>
+   <div class="bt-steps" style="grid-template-columns:repeat(7,1fr)">${STEPS.map((x,i)=>`<div class="bt-step" data-i="${i}">${String(x[0]).replace('.',fr?',':'.')} s<span class="pt">${x[1]}</span></div>`).join('')}</div>
+   <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><button class="bt-play" id="pl">▶</button>
+   <div style="flex:1;min-width:220px"><form id="f" class="inrow"><input id="w" placeholder="${fr?'Titre de la musique…':'Song title…'}" autocomplete="off"><button class="primary">${t('validate')}</button></form><div class="msg" id="msg"></div></div></div>
+   <div class="actions" id="act"><button id="sk">⏭️ ${fr?'Passer (extrait plus long)':'Skip (longer clip)'}</button></div>
+   <div id="rv"></div><div class="bt-credit">${fr?'Extraits officiels fournis par Deezer':'Official previews provided by Deezer'}</div></div>`;
   const cv=$('#viz'),c2=cv.getContext('2d');
-  const setStep=()=>root.querySelectorAll('.bt-step').forEach((el,i)=>{el.classList.toggle('on',i===step&&!over);el.classList.toggle('done',i<step)});setStep();
-  async function load(){
-    if(buf)return true;$('#msg').textContent=fr?'Chargement de l\'extrait…':'Loading…';
-    try{track=await dzJsonp('/track/'+song.id);const ab=await (await fetch(track.preview)).arrayBuffer();ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();buf=await ctx.decodeAudioData(ab);$('#msg').textContent='';return true}
-    catch(e){$('#msg').textContent=fr?'Impossible de charger l\'extrait Deezer (ouvre le site gx3g0.github.io).':'Could not load the Deezer preview.';return false}
+  const setSteps=()=>root.querySelectorAll('.bt-step').forEach((el,i)=>{el.classList.toggle('on',i===step&&!over);el.classList.toggle('done',i<step)});
+  function viz(dur,t0){cancelAnimationFrame(raf);const W=cv.width=cv.clientWidth*2,H=cv.height=300;
+    const loop=()=>{if(!alive)return;raf=requestAnimationFrame(loop);c2.clearRect(0,0,W,H);const pr=Math.min(1,(ctx.currentTime-t0)/dur),playing=pr<1&&src;
+      const n=48,bw=W/n;for(let i=0;i<n;i++){const ph=Date.now()/180+i*.6;const h=playing?(.25+.75*Math.abs(Math.sin(ph)*Math.sin(ph*.37+i)))*H*.75:8;const g=c2.createLinearGradient(0,H,0,H-h);g.addColorStop(0,'#8f7bff');g.addColorStop(1,'#ff4fa3');c2.fillStyle=g;c2.fillRect(i*bw+3,(H-h)/2,bw-6,h)}
+      c2.fillStyle='rgba(255,255,255,.15)';c2.fillRect(0,H-6,W,6);c2.fillStyle='#ffb02e';c2.fillRect(0,H-6,W*pr,6);if(pr>=1)cancelAnimationFrame(raf)};loop()}
+  function stop(){try{src&&src.stop()}catch(e){}src=null;const p=$('#pl');if(p){p.classList.remove('playing');p.textContent='▶'}}
+  function play(dur){
+    if(!cur||!cur.buf)return;stop();ctx.resume();
+    const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=cur.buf;s.connect(g);g.connect(ctx.destination);
+    const t0=ctx.currentTime+.03,d=Math.min(dur,cur.buf.duration),fd=Math.min(.012,d/4);
+    g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(1,t0+fd);g.gain.setValueAtTime(1,t0+d-fd);g.gain.linearRampToValueAtTime(0,t0+d);
+    s.start(t0,0,d);src=s;s.onended=()=>{if(src===s)stop()};$('#pl').classList.add('playing');$('#pl').textContent='❚❚';viz(d,t0);
   }
-  function chain(stage){
-    const out=ctx.createGain();out.gain.value=stage<3?1.6:1;an=ctx.createAnalyser();an.fftSize=256;out.connect(an);an.connect(ctx.destination);
-    const s=ctx.createBufferSource();s.buffer=buf;
-    const lp=(f,inp)=>{let n=inp;for(let k=0;k<3;k++){const b=ctx.createBiquadFilter();b.type='lowpass';b.frequency.value=f;b.Q.value=.7;n.connect(b);n=b}return n};
-    const hp=(f,inp)=>{let n=inp;for(let k=0;k<2;k++){const b=ctx.createBiquadFilter();b.type='highpass';b.frequency.value=f;n.connect(b);n=b}return n};
-    if(stage===0){lp(150,s).connect(out)}
-    else if(stage===1){lp(420,s).connect(out)}
-    else if(stage===2){/* basses + côtés stéréo (les instruments) sans le centre (la voix) */
-      lp(260,s).connect(out);
-      const sp=ctx.createChannelSplitter(2),gl=ctx.createGain(),gr=ctx.createGain(),sum=ctx.createGain();gl.gain.value=1;gr.gain.value=-1;sum.channelCount=1;sum.channelCountMode='explicit';
-      s.connect(sp);sp.connect(gl,0);sp.connect(gr,1);gl.connect(sum);gr.connect(sum);const side=hp(260,sum);const g=ctx.createGain();g.gain.value=1.8;side.connect(g);g.connect(out)}
-    else s.connect(out);
-    return s;
+  async function newRound(){
+    over=false;step=0;round++;$('#rd').textContent=round;$('#rv').innerHTML='';$('#w').disabled=false;$('#w').value='';$('#msg').textContent=fr?'Chargement…':'Loading…';
+    $('#act').innerHTML=`<button id="sk">⏭️ ${fr?'Passer (extrait plus long)':'Skip (longer clip)'}</button>`;$('#sk').onclick=skip;setSteps();
+    for(let tries=0;tries<4;tries++){try{const r=await (nextP||loadSong(pick()));nextP=null;if(!alive)return;ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();r.buf=await ctx.decodeAudioData(r.ab);cur=r;break}catch(e){nextP=null;cur=null}}
+    if(!cur){$('#msg').textContent=fr?"Impossible de charger les extraits Deezer (joue sur gx3g0.github.io).":'Could not load Deezer previews.';return}
+    $('#msg').textContent=fr?'Appuie sur ▶ pour écouter 0,1 seconde !':'Press ▶ to hear 0.1 second!';
+    nextP=loadSong(pick());nextP.catch(()=>{});
   }
-  function stop(){try{src&&src.stop()}catch(e){}src=null;$('#pl').classList.remove('playing');$('#pl').textContent='▶'}
-  async function play(){
-    if(src){stop();return}
-    if(!await load())return;await ctx.resume();
-    src=chain(over?3:step);src.onended=()=>{if(src)stop()};src.start(0,0,over?30:15);$('#pl').classList.add('playing');$('#pl').textContent='❚❚';draw();
-  }
-  function draw(){cancelAnimationFrame(raf);const W=cv.width=cv.clientWidth*2,H=cv.height=340;const data=new Uint8Array(128);
-    const loop=()=>{raf=requestAnimationFrame(loop);c2.clearRect(0,0,W,H);if(!an)return;an.getByteFrequencyData(data);const n=64,bw=W/n;
-      for(let i=0;i<n;i++){const v=data[i]/255,h=Math.max(4,v*H*.9);const g=c2.createLinearGradient(0,H,0,H-h);g.addColorStop(0,'#8f7bff');g.addColorStop(1,'#ff4fa3');c2.fillStyle=g;c2.beginPath();c2.roundRect?c2.roundRect(i*bw+2,H-h,bw-4,h,6):c2.rect(i*bw+2,H-h,bw-4,h);c2.fill()}};loop()}
-  const key=x=>norm(x).replace(/[^a-z0-9]/g,'');
-  function reveal(win){over=true;setStep();stop();$('#w').disabled=true;$('#nx').remove();$('#gu').remove();
-    const pts=win?STEPS[step].pts:0;if(win)fx.confetti();
-    const tt=track||{};$('#rv').innerHTML=`<div class="bt-reveal">${tt.album?`<img src="${esc(tt.album.cover_medium)}" alt="">`:''}<div><div class="big">${win?'🎉 +'+pts+' pts':(fr?'Raté !':'Missed!')}</div><div style="font-size:1.2rem;font-weight:800">${esc(tt.title||'')} — ${esc(tt.artist?tt.artist.name:'')}</div>${tt.link?`<a href="${esc(tt.link)}" target="_blank" rel="noopener" style="color:#ffb3d9;text-decoration:underline">${fr?'Écouter sur Deezer':'Listen on Deezer'} ↗</a>`:''}<div class="actions"><button class="primary" id="re">🔄 ${t('restart')}</button></div></div></div>`;
-    $('#re').onclick=()=>route();}
-  $('#pl').onclick=play;
-  $('#nx').onclick=()=>{if(over)return;stop();if(step<3){step++;setStep();play()}};
-  $('#gu').onclick=async()=>{await load();reveal(false)};
-  $('#f').onsubmit=async e=>{e.preventDefault();if(over)return;const v=key($('#w').value);$('#w').value='';if(!v)return;tries++;
-    if(song.a.some(a=>key(a)===v)){await load();reveal(true)}else{$('#msg').innerHTML=`<span style="color:var(--bad)">❌ ${fr?'Ce n\'est pas ça…':'Nope…'}</span>`;fx.shake($('#w'))}};
+  function skip(){if(over||!cur)return;if(step>=STEPS.length-1){lose();return}step++;setSteps();play(STEPS[step][0])}
+  function reveal(win){over=true;setSteps();$('#w').disabled=true;const pts=win?STEPS[step][1]:0;score+=pts;$('#sc').textContent=score;
+    const tr=cur.tr;if(win){fx.confetti();fx.toast(`🎉 +${pts}`)}
+    $('#rv').innerHTML=`<div class="bt-reveal"><img src="${esc(tr.album.cover_medium)}" alt=""><div><div class="big">${win?(fr?'Trouvé en ':'Found in ')+String(STEPS[step][0]).replace('.',fr?',':'.')+' s ! +'+pts:(fr?'Perdu !':'You lose!')}</div><div style="font-size:1.2rem;font-weight:800">${esc(tr.title)} — ${esc(tr.artist.name)}</div><a href="${esc(tr.link)}" target="_blank" rel="noopener" style="color:#ffb3d9;text-decoration:underline">${fr?'Écouter sur Deezer':'Listen on Deezer'} ↗</a></div></div>`;
+    $('#act').innerHTML=`<button class="primary" id="nx">🎵 ${fr?'Musique suivante':'Next song'}</button><button id="ls">🔊 ${fr?"Réécouter l'extrait":'Replay clip'}</button>`;
+    $('#nx').onclick=()=>{stop();newRound()};$('#ls').onclick=()=>play(30);play(10);}
+  function lose(){reveal(false)}
+  $('#pl').onclick=()=>{if(src){stop();return}if(!cur)return;play(over?30:STEPS[step][0])};
+  $('#sk').onclick=skip;
+  $('#f').onsubmit=e=>{e.preventDefault();if(over||!cur)return;const v=key($('#w').value);$('#w').value='';if(!v)return;
+    const ok=cur.keys.some(k=>k===v||(k.length>=5&&lev(k,v)<=(k.length>=9?2:1))||(v.length>=6&&k.includes(v)&&v.length>=k.length*.7));
+    if(ok){reveal(true);return}
+    $('#msg').innerHTML=`<span style="color:var(--bad)">❌ ${fr?"Ce n'est pas ça…":'Nope…'}</span>`;fx.shake($('#w'));setTimeout(()=>{if(!over)skip()},350);};
+  newRound();
 };
 
 /* =====================================================================
