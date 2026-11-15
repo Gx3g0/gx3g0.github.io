@@ -549,10 +549,10 @@ function staticMap(host,lat,lon,label){
     const W=host.clientWidth||400,H=260,n=2**z;
     const x=(lon+180)/360*n*256,y=(1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*n*256;
     const x0=x-W/2,y0=y-H/2;let tiles='';
-    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++){if(ty<0||ty>=n)continue;const wx=((tx%n)+n)%n;tiles+=`<img alt="" src="https://${'abcd'[(tx+ty+8)&3]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${wx}/${ty}.png" style="left:${Math.round(tx*256-x0)}px;top:${Math.round(ty*256-y0)}px" onerror="this.remove()">`}
+    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++){if(ty<0||ty>=n)continue;const wx=((tx%n)+n)%n;tiles+=`<img alt="" src="https://tile.openstreetmap.org/${z}/${wx}/${ty}.png" style="left:${Math.round(tx*256-x0)}px;top:${Math.round(ty*256-y0)}px" onerror="this.remove()">`}
     const px=(lon+180)/360*100,py=(90-lat)/180*100;
     const fb=`<svg class="fb" viewBox="0 0 360 180" preserveAspectRatio="none"><rect width="360" height="180" fill="#9cc3d5"/>${Array.from({length:11},(_,i)=>`<line x1="${i*36}" y1="0" x2="${i*36}" y2="180" stroke="#ffffff55" stroke-width=".5"/>`).join('')}${Array.from({length:7},(_,i)=>`<line x1="0" y1="${i*30}" x2="360" y2="${i*30}" stroke="#ffffff55" stroke-width=".5"/>`).join('')}<circle cx="${px*3.6}" cy="${py*1.8}" r="40" fill="#ffcf3f33"/><circle cx="${px*3.6}" cy="${py*1.8}" r="3" fill="#e63946"/></svg>`;
-    host.innerHTML=`<div class="smap">${fb}${tiles}<div class="pin">📍</div><div class="lbl">📍 ${esc(label)} · ${lat.toFixed(3)}, ${lon.toFixed(3)}</div><div class="zb"><button data-z="1">+</button><button data-z="-1">−</button></div><div class="attr">© OpenStreetMap · © CARTO</div></div>`;
+    host.innerHTML=`<div class="smap">${fb}${tiles}<div class="pin">📍</div><div class="lbl">📍 ${esc(label)} · ${lat.toFixed(3)}, ${lon.toFixed(3)}</div><div class="zb"><button data-z="1">+</button><button data-z="-1">−</button></div><div class="attr">© OpenStreetMap</div></div>`;
     host.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{z=Math.min(17,Math.max(3,z+ +b.dataset.z));draw()});
   }
 }
