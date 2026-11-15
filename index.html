@@ -396,7 +396,7 @@ input:focus,select:focus{box-shadow:0 0 0 4px rgba(255,207,63,.14)}
 <div class="bgfx"><i></i><i></i><i></i></div><div id="scrim"></div><div id="toasts"></div><canvas id="confetti"></canvas>
 <nav id="drawer" aria-label="menu"></nav>
 <div id="app"></div>
-<script src="d-pedanto.js"></script><script src="d-semantik.js"></script><script src="d-motus.js"></script><script src="d-qbank1.js"></script><script src="d-qbank2.js"></script><script src="d-qbank3.js"></script><script src="d-qbank4.js"></script><script src="d-qbank5.js"></script><script src="d-qbank6.js"></script><script src="d-qbank7.js"></script><script src="d-qbank8.js"></script>
+<script src="d-pedanto.js"></script><script src="d-semantik.js"></script><script src="d-motus.js"></script><script src="d-qbank1.js"></script><script src="d-qbank2.js"></script><script src="d-qbank3.js"></script><script src="d-qbank4.js"></script><script src="d-qbank5.js"></script><script src="d-qbank6.js"></script><script src="d-qbank7.js"></script><script src="d-qbank8.js"></script><script src="d-top10a.js"></script><script src="d-top10b.js"></script><script src="d-top10c.js"></script>
 <script>
 /* =====================================================================
    LUDOVERSE — un site de mini-jeux
@@ -941,10 +941,13 @@ function cleanWikiHtml(html){
   r.querySelectorAll('a').forEach(a=>{const h=a.getAttribute('href')||'';const m=h.match(/^(?:\.\/|\/wiki\/)([^#?]+)/);if(m){const ti=decodeURIComponent(m[1]).replace(/_/g,' ');if(!NS.test(ti)){const s=doc.createElement('a');s.className='wl';s.dataset.t=ti;s.innerHTML=a.innerHTML;a.replaceWith(s);return}}const sp=doc.createElement('span');sp.innerHTML=a.innerHTML;a.replaceWith(sp)});
   return r.innerHTML;
 }
+async function wikiPick(c,seed){let t=seed>>>0;const r=()=>{t+=0x6D2B79F5;let x=Math.imul(t^t>>>15,1|t);x^=x+Math.imul(x^x>>>7,61|x);return((x^x>>>14)>>>0)/4294967296};const A='ABCDEFGHIJKLMNOPRSTV',a='abcdefghilmnoprstu';const bad=/^(Liste|List)|\d{3,}|saison|season|élection|election|championnat|championship|sex|porn|nazi|génocide|genocide|meurtre|murder|massacre|attentat|terror/i;
+  for(let k=0;k<6;k++){const pre=A[Math.floor(r()*A.length)]+a[Math.floor(r()*a.length)]+a[Math.floor(r()*a.length)];const d=await wapi(c,{action:'query',list:'allpages',apfrom:pre,apminsize:'60000',apfilterredir:'nonredirects',aplimit:'25',apnamespace:'0'});const L=((d.query||{}).allpages||[]).map(p=>p.title).filter(x=>!bad.test(x));if(L.length)return L[Math.floor(r()*Math.min(10,L.length))]}throw new Error('none')}
+async function wikiDaily(c,n){if(n<=1)return WPAIRS[c][(n-1)%WPAIRS[c].length];const k='lv-wikipair-'+c+'-'+n;const s=store.get(k,null);if(s)return s;const a=await wikiPick(c,n*7919+11),b=await wikiPick(c,n*104729+23);if(a===b)throw new Error('same');const p=[a,b];store.set(k,p);return p}
 GAME_IMPL.wiki=root=>{
   const c=cl(),n=dayNum(),key=`lv-wiki-${c}-${n}`;const pair=WPAIRS[c][(n-1)%WPAIRS[c].length];
   root.innerHTML=`${dailyBar(n)}${cnote()}<p class="intro">${t('wiki_intro')}</p><div id="wb"><p class="muted">${t('loading')}</p></div>`;startCountdown();
-  wapi(c,{action:'query',titles:pair[1],redirects:'1'}).then(d=>live(pair[0],d.query.pages[0].title)).catch(()=>fallback());
+  wikiDaily(c,n).catch(()=>pair).then(p=>wapi(c,{action:'query',titles:p[1],redirects:'1'}).then(d=>live(p[0],d.query.pages[0].title))).catch(()=>fallback());
   function live(start,target){
     const st=store.get(key,{path:[start],clicks:0,won:false,mode:'live'});if(st.mode!=='live'){st.path=[start];st.clicks=0;st.won=false;st.mode='live'}
     const realUrl=`https://${c}.wikipedia.org/wiki/${encodeURIComponent(start.replace(/ /g,'_'))}`;
@@ -1038,6 +1041,19 @@ const SCENES=[
 [1,"Prouve-le.","Prove it."],
 [0,"Je t'ai vu le pousser avec la patte en me regardant dans les yeux !","I saw you push it with your paw while looking me in the eye!"],
 [1,"La gravité est responsable. Pas moi.","Gravity did it. Not me."]]}];
+const MFILMS=[
+{e:'🕵️',t:'Charade',y:1963,g:{fr:'Comédie policière',en:'Comedy thriller'},f:'Charade (1963).webm'},
+{e:'📰',t:'La Dame du vendredi (His Girl Friday)',y:1940,g:{fr:'Comédie',en:'Comedy'},f:'His Girl Friday (1940).webm'},
+{e:'⚔️',t:'Cyrano de Bergerac',y:1950,g:{fr:'Aventure',en:'Adventure'},f:'Cyrano de Bergerac (1950).webm'},
+{e:'🤠',t:'Le Grand McLintock',y:1963,g:{fr:'Western comique',en:'Comedy western'},f:'McLintock! (1963 film).webm'},
+{e:'🚗',t:'Détour',y:1945,g:{fr:'Film noir',en:'Film noir'},f:'Detour (1945) by Edgar G. Ulmer.webm'},
+{e:'🏴‍☠️',t:'Le Capitaine Kidd',y:1945,g:{fr:'Pirates',en:'Pirates'},f:'Captain Kidd (1945) by Rowland V. Lee.webm'},
+{e:'🦇',t:'La Chauve-souris (The Bat)',y:1959,g:{fr:'Mystère',en:'Mystery'},f:'The Bat (1959) by Crane Wilbur.webm'},
+{e:'🐙',t:'La Créature de la mer hantée',y:1961,g:{fr:'Comédie fantastique',en:'Monster comedy'},f:'Creature from the Haunted Sea (1961) by Roger Corman, colorized.webm'},
+{e:'🎩',t:'La Terreur de Tiny Town',y:1938,g:{fr:'Western musical',en:'Musical western'},f:'The Terror of Tiny Town (1938) by Sam Newfield.webm'},
+{e:'🏺',t:'Le Pot d\'un million de ryos',y:1935,g:{fr:'Comédie japonaise',en:'Japanese comedy'},f:'The Million Ryo Pot (1935).webm',q:'240p.vp9.webm'}];
+function srtParse(x){return x.replace(/\r/g,'').split(/\n\n+/).map(b=>{const m=b.match(/(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/);if(!m)return null;const tm=(h,mi,s,ms)=>+h*3600+ +mi*60+ +s+ +ms/1000;const L=b.split('\n');const i=L.findIndex(l=>l.includes('-->'));return{s:tm(m[1],m[2],m[3],m[4]),e:tm(m[5],m[6],m[7],m[8]),txt:L.slice(i+1).join(' ').replace(/<[^>]+>/g,'').replace(/\{[^}]*\}/g,'').trim()}}).filter(x=>x&&x.txt&&!/♪|^\[|^\(/.test(x.txt))}
+function scenesOf(cues){const G=[];let cur=[];cues.forEach(q=>{if(cur.length&&(q.s-cur[cur.length-1].e>2.5||cur.length>=9)){G.push(cur);cur=[]}cur.push(q)});if(cur.length)G.push(cur);const ok=G.filter(g=>g.length>=5&&g[g.length-1].e-g[0].s<=50);const n=Math.min(12,ok.length);return Array.from({length:n},(_,k)=>ok[Math.floor(k*ok.length/n)])}
 const CAST_COLORS=['#ff6b9a','#4d96ff','#3ddc84','#ffbe0b'];
 GAME_IMPL.mime=root=>{
   const c=cl();let flt=0;list();
@@ -1045,10 +1061,12 @@ GAME_IMPL.mime=root=>{
   function list(){
     root.innerHTML=`${cnote()}<p class="intro">${t('mime_intro')}</p><div class="seg" style="margin-bottom:12px">${[0,1,2,3].map(k=>`<button data-k="${k}" class="${k===flt?'on':''}">${k===0?t('all'):k===3?'👥 3+':'👥 '+k}</button>`).join('')}</div>
     <div class="scenes">${SCENES.map((s,i)=>({s,i})).filter(({s})=>!flt||(flt===3?s.cast.fr.length>=3:s.cast.fr.length===flt)).map(({s,i})=>`<button class="scard" data-i="${i}"><span class="se">${s.e}</span><b>${esc(s.ti[c])}</b><span class="muted">${esc(s.g[c])} · ${s.l.length} ${c==='fr'?'phrases':'lines'}</span><span class="badge">${t('mime_persons',{n:s.cast.fr.length})}</span></button>`).join('')}
-    <button class="scard imp" id="imp"><span class="se">📁</span><b>${t('mime_import')}</b><span class="muted">${t('mime_import_d')}</span></button></div>`;
+    <button class="scard imp" id="imp"><span class="se">📁</span><b>${t('mime_import')}</b><span class="muted">${t('mime_import_d')}</span></button></div>
+    <h3 style="margin:24px 0 6px">🎞️ ${c==='fr'?'Vraies scènes de films (domaine public)':'Real film scenes (public domain)'}</h3><p class="note" style="margin-top:0">${c==='fr'?'De vrais films libres de droits, hébergés sur Wikimedia Commons, avec leurs sous-titres : la vidéo passe sans le son et tu doubles chaque réplique.':'Real copyright-free films hosted on Wikimedia Commons, with subtitles: the video plays muted and you dub each line.'}</p>
+    <div class="scenes">${MFILMS.map((f,i)=>`<button class="scard" data-film="${i}"><span class="se">${f.e}</span><b>${esc(f.t)}</b><span class="muted">${esc(f.g[c]||f.g.fr)} · ${f.y}</span><span class="badge">${c==='fr'?'Film réel':'Real film'}</span></button>`).join('')}</div>`;
     root.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{flt=+b.dataset.k;list()});
     root.querySelectorAll('.scard[data-i]').forEach(b=>b.onclick=()=>scene(SCENES[+b.dataset.i]));
-    $('#imp').onclick=video;
+    $('#imp').onclick=()=>video();root.querySelectorAll('[data-film]').forEach(b=>b.onclick=()=>film(MFILMS[+b.dataset.film]));
   }
   async function micOrWarn(el){try{return await getMic()}catch(e){el.innerHTML=`<div class="cnote">${t('mime_mic')}</div>`;return null}}
   /* --- scène intégrée --- */
@@ -1076,23 +1094,41 @@ GAME_IMPL.mime=root=>{
     }
     draw();
   }
+  /* --- vrai film du domaine public --- */
+  async function film(F){
+    const back=`<div class="actions" style="margin:0 0 12px"><button id="bk">${t('mime_back')}</button></div>`;
+    root.innerHTML=`${back}<h2>${F.e} ${esc(F.t)} <span class="tag">${F.y}</span></h2><p class="muted">${t('loading')}</p>`;$('#bk').onclick=list;
+    try{
+      const api=p=>fetch('https://commons.wikimedia.org/w/api.php?format=json&formatversion=2&origin=*&'+new URLSearchParams(p)).then(r=>r.json());
+      const ii=await api({action:'query',prop:'imageinfo',iiprop:'url',titles:'File:'+F.f});const u=ii.query.pages[0].imageinfo[0].url.split('?')[0];const base=u.split('/').pop();
+      const vurl=u.replace('/wikipedia/commons/','/wikipedia/commons/transcoded/')+'/'+base+'.'+(F.q||'480p.vp9.webm');
+      const sd=await api({action:'parse',prop:'wikitext',page:'TimedText:'+F.f+'.fr.srt'});const S=scenesOf(srtParse(sd.parse.wikitext));
+      if(!root.isConnected)return;if(!S.length)throw new Error('none');
+      root.innerHTML=`${back}<h2 style="margin-bottom:6px">${F.e} ${esc(F.t)} <span class="tag">${F.y}</span></h2><p class="note">${c==='fr'?'Film du domaine public (Wikimedia Commons). Choisis une scène : la vidéo passe sans le son, tu lis la réplique et tu la doubles.':'Public-domain film (Wikimedia Commons). Pick a scene: the video plays muted, you read the line and dub it.'}</p>
+      <div class="scenes">${S.map((g,k)=>`<button class="scard" data-s="${k}"><span class="se">🎬</span><b>${c==='fr'?'Scène':'Scene'} ${k+1} · ${Math.floor(g[0].s/60)} min</b><span class="muted">« ${esc(g[0].txt.slice(0,70))}${g[0].txt.length>70?'…':''} »</span><span class="badge">${g.length} ${c==='fr'?'répliques':'lines'}</span></button>`).join('')}</div>`;
+      $('#bk').onclick=list;
+      root.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=+b.dataset.s,g=S[k];video({url:vurl,ph:g.map(x=>({s:x.s,e:x.e,txt:x.txt})),title:`${F.t} — ${c==='fr'?'scène':'scene'} ${k+1}`,credit:`Source : Wikimedia Commons — ${F.f} (${c==='fr'?'domaine public':'public domain'})`,n:2})});
+    }catch(e){if(!root.isConnected)return;root.innerHTML=`${back}<div class="cnote">${c==='fr'?'Impossible de charger ce film pour le moment. Réessaie plus tard.':'Could not load this film right now.'}</div>`;$('#bk').onclick=list}
+  }
   /* --- import d'un extrait vidéo --- */
-  function video(){
-    let phrases=[],cuts=[],takes=[],people=2,bg='r',actx=null,gO,gL,gR,stopFlag=false;
-    root.innerHTML=`<div class="actions" style="margin:0 0 12px"><button id="bk">${t('mime_back')}</button></div><h2 style="margin-bottom:10px">📁 ${t('mime_import')}</h2>
-    <div class="row2"><label class="f">${t('mime_video')}<input type="file" id="fv" accept="video/*"></label><label class="f">${t('mime_srt')}<input type="file" id="fs" accept=".srt,.vtt,text/plain"></label></div>
+  function video(P){
+    let phrases=[],cuts=[],takes=[],people=P?P.n:2,bg=P?'m':'r',actx=null,gO,gL,gR,stopFlag=false;
+    root.innerHTML=`<div class="actions" style="margin:0 0 12px"><button id="bk">${t('mime_back')}</button></div><h2 style="margin-bottom:10px">${P?'🎞️ '+esc(P.title):'📁 '+t('mime_import')}</h2>${P?`<p class="note">${esc(P.credit)}</p>`:''}
+    <div class="row2" ${P?'hidden':''}><label class="f">${t('mime_video')}<input type="file" id="fv" accept="video/*"></label><label class="f">${t('mime_srt')}<input type="file" id="fs" accept=".srt,.vtt,text/plain"></label></div>
     <div class="row2" style="margin-top:10px"><label class="f">${t('mime_people')}<input type="number" id="pp" min="1" max="20" value="${people}"></label><label class="f">${t('mime_bg')}<select id="bgm"><option value="r">${t('mime_bg_r')}</option><option value="m">${t('mime_bg_m')}</option><option value="o">${t('mime_bg_o')}</option></select></label></div>
     <div id="vz" style="margin-top:14px"></div>`;
     $('#bk').onclick=list;$('#pp').oninput=e=>{people=+e.target.value||1;const b=$('#ppb');if(b)b.textContent=t('mime_persons',{n:people})};$('#bgm').onchange=e=>bg=e.target.value;
-    $('#fv').onchange=e=>{const f=e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);cleanups.push(()=>URL.revokeObjectURL(url));
-      $('#vz').innerHTML=`<span class="tag" id="ppb" style="background:var(--accent);color:#1b1b1b;font-weight:700">${t('mime_persons',{n:people})}</span><video id="vd" src="${url}" controls playsinline style="margin-top:8px"></video><p class="note">${t('mime_cut_h')}</p><div class="actions"><button class="primary" id="cut">${t('mime_cut')}</button><button id="rst">${t('mime_reset')}</button><button id="dub" class="primary">${t('mime_playdub')}</button><button id="stp">${t('mime_stopall')}</button></div><div id="mw"></div><div id="ph"></div>`;
+    const load=url=>{
+      $('#vz').innerHTML=`<span class="tag" id="ppb" style="background:var(--accent);color:#1b1b1b;font-weight:700">${t('mime_persons',{n:people})}</span><video id="vd" crossorigin="anonymous" src="${url}" controls playsinline style="margin-top:8px"></video><p class="note">${t('mime_cut_h')}</p><div class="actions"><button class="primary" id="cut">${t('mime_cut')}</button><button id="rst">${t('mime_reset')}</button><button id="dub" class="primary">${t('mime_playdub')}</button><button id="stp">${t('mime_stopall')}</button></div><div id="mw"></div><div id="ph"></div>`;
       const v=$('#vd');
       $('#cut').onclick=()=>{cuts.push(v.currentTime);cuts.sort((a,b)=>a-b);fromCuts();drawPh()};
       $('#rst').onclick=()=>{cuts=[];phrases=[];takes=[];drawPh()};
       $('#stp').onclick=()=>{stopFlag=true;v.pause()};
       $('#dub').onclick=playDub;
-      v.onloadedmetadata=()=>{if(phrases.length===0&&cuts.length===0)drawPh()};
+      v.onloadedmetadata=()=>{if(P){v.currentTime=Math.max(0,phrases[0].s-0.3);drawPh()}else if(phrases.length===0&&cuts.length===0)drawPh()};
     };
+    $('#fv').onchange=e=>{const f=e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);cleanups.push(()=>URL.revokeObjectURL(url));load(url)};
+    if(P){phrases=P.ph;$('#bgm').value='m';load(P.url)}
     $('#fs').onchange=async e=>{const f=e.target.files[0];if(!f)return;phrases=parseSrt(await f.text());takes=[];drawPh()};
     function fromCuts(){const v=$('#vd');const pts=[0,...cuts];phrases=pts.map((s,k)=>({s,e:k+1<pts.length?pts[k+1]:(cuts.length?Math.min(v.duration||s+5,s+8):s),txt:''})).filter(p=>p.e-p.s>0.2)}
     function parseSrt(txt){return txt.replace(/\r/g,'').split(/\n\n+/).map(b=>{const m=b.match(/(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/);if(!m)return null;const tm=(h,mi,s,ms)=>+h*3600+ +mi*60+ +s+ +ms/1000;const lines=b.split('\n');const idx=lines.findIndex(l=>l.includes('-->'));return{s:tm(m[1],m[2],m[3],m[4]),e:tm(m[5],m[6],m[7],m[8]),txt:lines.slice(idx+1).join(' ').replace(/<[^>]+>/g,'')}}).filter(Boolean)}
@@ -1103,7 +1139,7 @@ GAME_IMPL.mime=root=>{
     function setMode(m){const v=$('#vd');graph();if(!actx){v.muted=m!=='o';return}actx.resume();v.muted=false;gO.gain.value=m==='o'?1:0;gL.gain.value=m==='r'?1:0;gR.gain.value=m==='r'?-1:0}
     function seg(k,mode){return new Promise(res=>{const v=$('#vd'),p=phrases[k];setMode(mode);v.currentTime=p.s;v.play().catch(()=>{});const iv=setInterval(()=>{if(!root.isConnected||v.currentTime>=p.e||v.paused){clearInterval(iv);v.pause();res()}},40);timers.push(iv)})}
     async function recSeg(k,btn){const s=await micOrWarn($('#mw'));if(!s)return;btn.classList.add('rec');const r=startRec(s);await seg(k,bg);r.stop();takes[k]=await r.done;drawPh()}
-    function playDub(){const v=$('#vd');if(!v)return;stopFlag=false;setMode(bg);const played=new Set();v.currentTime=0;v.play().catch(()=>{});const iv=setInterval(()=>{if(stopFlag||!root.isConnected||v.ended){clearInterval(iv);return}phrases.forEach((p,k)=>{if(takes[k]&&!played.has(k)&&v.currentTime>=p.s&&v.currentTime<p.e){played.add(k);new Audio(takes[k]).play().catch(()=>{})}})},40);timers.push(iv)}
+    function playDub(){const v=$('#vd');if(!v)return;stopFlag=false;setMode(bg);const played=new Set();v.currentTime=P?Math.max(0,phrases[0].s-0.3):0;v.play().catch(()=>{});const iv=setInterval(()=>{if(stopFlag||!root.isConnected||v.ended||(P&&v.currentTime>phrases[phrases.length-1].e+0.6)){clearInterval(iv);if(P)v.pause();return}phrases.forEach((p,k)=>{if(takes[k]&&!played.has(k)&&v.currentTime>=p.s&&v.currentTime<p.e){played.add(k);new Audio(takes[k]).play().catch(()=>{})}})},40);timers.push(iv)}
   }
 };
 
@@ -1134,6 +1170,7 @@ const SIZES=[
 ['🏔️',{fr:'Le mont Everest',en:'Mount Everest',es:'El monte Everest',de:'Der Mount Everest'},8849],
 ['✈️',{fr:"L'altitude d'un avion de ligne",en:'Cruising altitude of an airliner',es:'Altitud de crucero de un avión',de:'Reiseflughöhe eines Flugzeugs'},11000]];
 function fmtLen(m){const nf=(v,d)=>new Intl.NumberFormat(lang,{maximumFractionDigits:d}).format(v);if(m>=1000)return nf(m/1000,m>=10000?0:1)+' km';if(m>=1)return nf(m,m>=100?0:1)+' m';if(m>=0.01)return nf(m*100,m>=0.1?0:1)+' cm';return nf(m*1000,1)+' mm'}
+[["🐭", "Une souris (corps)", "A mouse (body)", 0.08], ["🥚", "Un œuf de poule", "A hen's egg", 0.06], ["🍌", "Une banane", "A banana", 0.18], ["✏️", "Un crayon neuf", "A new pencil", 0.19], ["⚽", "Un ballon de foot (diamètre)", "A football (diameter)", 0.22], ["🧱", "Une brique", "A brick", 0.22], ["🎾", "Un filet de tennis (hauteur au centre)", "A tennis net (height at centre)", 0.914], ["🎸", "Une guitare", "A guitar", 1.0], ["🐧", "Un manchot empereur", "An emperor penguin", 1.15], ["🦩", "Un flamant rose", "A flamingo", 1.2], ["🐕", "Un berger allemand (au garrot)", "A German shepherd (at the shoulder)", 0.62], ["🐎", "Un cheval (au garrot)", "A horse (at the shoulder)", 1.6], ["🦘", "Un kangourou roux (debout)", "A red kangaroo (standing)", 1.6], ["🚲", "Un vélo (longueur)", "A bicycle (length)", 1.75], ["🛏️", "Un lit double (longueur)", "A double bed (length)", 1.9], ["🥅", "Une cage de foot (hauteur)", "A football goal (height)", 2.44], ["🐻‍❄️", "Un ours polaire (debout)", "A polar bear (standing)", 2.6], ["🏀", "Un panier de basket (hauteur)", "A basketball hoop (height)", 3.05], ["🚗", "Une voiture citadine (longueur)", "A small car (length)", 3.9], ["🗿", "Une statue moaï (moyenne)", "An average moai statue", 4.0], ["🦈", "Un grand requin blanc", "A great white shark", 4.5], ["🐍", "Un anaconda vert", "A green anaconda", 5.0], ["🐊", "Un crocodile marin", "A saltwater crocodile", 5.0], ["🚌", "Un bus (longueur)", "A bus (length)", 12.0], ["🐋", "Une baleine bleue", "A blue whale", 25.0], ["🦕", "Un diplodocus (longueur)", "A diplodocus (length)", 26.0], ["🏛️", "L'Arc de Triomphe", "The Arc de Triomphe", 50.0], ["⛪", "Les tours de Notre-Dame de Paris", "The towers of Notre-Dame", 69.0], ["✈️", "Un Airbus A380 (longueur)", "An Airbus A380 (length)", 73.0], ["🏟️", "Un terrain de foot (longueur)", "A football pitch (length)", 105.0], ["🛰️", "La Station spatiale internationale (envergure)", "The International Space Station (span)", 109.0], ["🚀", "La fusée Saturn V", "The Saturn V rocket", 110.6], ["🎡", "La grande roue London Eye", "The London Eye", 135.0], ["🚄", "Une rame de TGV (longueur)", "A TGV train (length)", 200.0], ["🏙️", "La tour Montparnasse", "The Montparnasse Tower", 210.0], ["🌉", "Les piles du Golden Gate", "The Golden Gate towers", 227.0], ["🚢", "Le Titanic (longueur)", "The Titanic (length)", 269.0], ["🏢", "L'Empire State Building (toit)", "The Empire State Building (roof)", 381.0], ["⛰️", "Le mont Blanc", "Mont Blanc", 4806.0]].forEach(([e,f,en,m])=>{if(!SIZES.some(x=>x[1].fr===f))SIZES.push([e,{fr:f,en,es:en,de:en},m])});
 GAME_IMPL.taille=root=>{
   const N=6;let i=0,total=0,list=shuffle(SIZES).slice(0,N);
   const emo=e=>`<svg class="te" viewBox="0 0 100 100" preserveAspectRatio="xMidYMax meet"><text x="50" y="82" font-size="94" text-anchor="middle">${e}</text></svg>`;
@@ -1628,6 +1665,7 @@ const TOP10=[
 {id:'rivers',e:'🌊',q:{fr:'Les plus longs fleuves du monde',en:'The longest rivers in the world'},src:'Wikipedia',a:['Nil|Nile','Amazone|Amazon|amazonas','Yangtsé|Yangtze|yangtse|yang tse|chang jiang|yangzi','Mississippi||missouri|mississippi missouri','Ienisseï|Yenisei|ienissei|yenisei|ienisei','Fleuve Jaune|Yellow River|huang he|fleuve jaune','Ob||ob irtych|irtych','Paraná|Parana','Congo||fleuve congo','Amour|Amur|amur|heilong']},
 {id:'peaks',e:'🏔️',q:{fr:'Les plus hautes montagnes du monde',en:'The highest mountains in the world'},src:'Wikipedia',a:['Everest||mont everest|chomolungma','K2||','Kangchenjunga||kanchenjunga|kangchenjunga|kangchendzonga','Lhotse||','Makalu||','Cho Oyu||','Dhaulagiri||','Manaslu||','Nanga Parbat||','Annapurna||']}];
 const tkey=x=>norm(x).replace(/[^a-z0-9ㄱ-힝]/g,'');
+if(window.T10_X)T10_X.forEach((x,i)=>{const[e,q,src,a]=x.split('|');if(!a||TOP10.some(o=>norm(o.q.fr)===norm(q)))return;const A=a.split(';').map(y=>{const p=y.split('=');return [p[0],'',...p.slice(1)].join('|')});if(A.length===10)TOP10.push({id:'x'+i,e,q:{fr:q,en:q},src,a:A})});
 GAME_IMPL.top10=root=>{
   const best=store.get('lv-top10',{});
   const parseA=x=>{const p=x.split('|');const fr=p[0],en=p[1]||fr;return{fr,en,keys:[fr,en,...p.slice(2)].map(tkey).filter(Boolean)}};
