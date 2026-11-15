@@ -396,7 +396,7 @@ input:focus,select:focus{box-shadow:0 0 0 4px rgba(255,207,63,.14)}
 <div class="bgfx"><i></i><i></i><i></i></div><div id="scrim"></div><div id="toasts"></div><canvas id="confetti"></canvas>
 <nav id="drawer" aria-label="menu"></nav>
 <div id="app"></div>
-<script src="d-pedanto.js"></script><script src="d-semantik.js"></script>
+<script src="d-pedanto.js"></script><script src="d-semantik.js"></script><script src="d-motus.js"></script>
 <script>
 /* =====================================================================
    LUDOVERSE — un site de mini-jeux
@@ -688,7 +688,7 @@ en:[
 "book|novel 84,reading 82,read 80,page 76,author 74,writer 72,library 80,chapter 76,story 64,publisher 70,bookshop 82,cover 64,paper 54,tale 66,poem 58,dictionary 70,manuscript 74,text 66,reader 70,comic 62,printing 68,bookcase 70|I have leaves but I'm not a tree.|People devour me without eating me.|I have a spine, a cover and chapters."]};
 function parseSem(s){const p=s.split('|');const w={};p[1].split(',').forEach(x=>{const m=x.trim().match(/^(.*)\s(-?\d+)$/);if(m)w[norm(m[1])]=+m[2]});w[norm(p[0])]=100;return{s:p[0],w,r:p.slice(2)}}
 const SEM_SEC={synonymes:88,'quasi-synonymes':82,'apparentés':72,'dérivés':70,hyperonymes:74,hyponymes:70,'méronymes':66,holonymes:66,vocabulaire:64,'composés':58,variantes:80,'variantes orthographiques':80,'antonymes':40};
-const SEM_STOP=new Set('les des une est son ses sur par pour dans qui que avec aux ont été elle ils plus mais comme cette ces sont aussi entre leur leurs tout tous dont très peut sans sous deux être fait faire avait selon ainsi même lors après avant chez notamment autres autre ceux celle celui alors donc encore souvent environ part peu certains certaines nombre premier première fois années année siècle depuis jusqu where with that this from have were which their they them been into than then also about there these such other some more most only over very when what your will would could should because while being both each many much made used like'.split(' '));
+const SEM_STOP=new Set('aout avril janvier fevrier mars mai juin juillet septembre octobre novembre decembre etre avoir trois quatre cinq six sept huit neuf dix cent mille liste consulte grande grand grands grandes petit petite petits petites peuvent peut pouvait doit sont etait etaient cette celui celle ceux plusieurs certain chaque autres meme memes toute toutes tous tout bien moins plus tres trop aussi alors ainsi donc encore toujours jamais deja lorsque quand comme dont selon parmi pendant contre vers chez sans sous entre depuis jusqu partie parties type types forme formes nom noms terme termes mot mots sens article articles page pages site sites voir aussi exemple utilise utilisee utilises utilisees appelle appele appelee nombreux nombreuses general generale premiere premier second seconde dernier derniere nouveau nouvelle nouveaux haut bas long longue francais francaise france monde annee annees siecle siecles fois jour jours temps lieu lieux cas fait faits facon partir mieux reference references source sources note notes lien liens externe externes wikipedia les des une est son ses sur par pour dans qui que avec aux ont été elle ils plus mais comme cette ces sont aussi entre leur leurs tout tous dont très peut sans sous deux être fait faire avait selon ainsi même lors après avant chez notamment autres autre ceux celle celui alors donc encore souvent environ part peu certains certaines nombre premier première fois années année siècle depuis jusqu where with that this from have were which their they them been into than then also about there these such other some more most only over very when what your will would could should because while being both each many much made used like'.split(' '));
 const semClean=x=>x.replace(/\{\{[^{}]*\}\}/g,'').replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g,'$1').replace(/'''?/g,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
 async function semExists(w,c){const k='lv-semok-'+c;const m=store.get(k,{});if(m[w]!=null)return m[w];let ok=true;
   try{if(c==='fr'){const u=`https://fr.wiktionary.org/w/api.php?action=query&format=json&formatversion=2&origin=*&titles=${encodeURIComponent(w)}`;const d=await (await fetch(u)).json();ok=!d.query.pages[0].missing}
@@ -700,13 +700,14 @@ async function semAuto(word,c){
   let defs=[];const me=norm(word);
   if(c==='fr'){
     try{const u=`https://fr.wiktionary.org/w/api.php?action=parse&format=json&formatversion=2&origin=*&prop=wikitext&redirects=1&page=${encodeURIComponent(word)}`;const d=await (await fetch(u)).json();
-      const fr=(d.parse.wikitext.split(/\n== *\{\{langue\|/).find(x=>x.startsWith('fr}}'))||'');
+      const fr=(('\n'+d.parse.wikitext).split(/\n== *\{\{langue\|/).find(x=>x.startsWith('fr}}'))||'');
       let sec='';fr.split('\n').forEach(l=>{const h=l.match(/^=+ *\{\{S\|([^|}]+)/);if(h){sec=h[1].trim();return}
         if(/^# /.test(l)&&/^(nom|adjectif|verbe)/.test(sec)){const t=semClean(l.slice(2));if(t.length>8)defs.push(t);[...l.matchAll(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g)].forEach((m,i)=>put(m[1],defs.length<=1?72-i:64-i))}
         else if(SEM_SEC[sec]&&/\[\[/.test(l))[...l.matchAll(/\[\[([^\]|#]*)/g)].forEach(m=>put(m[1],SEM_SEC[sec]))})}catch(e){}
     try{const T=word[0].toUpperCase()+word.slice(1);const d=await wapi('fr',{action:'query',prop:'extracts',explaintext:'1',redirects:'1',titles:T});const x=(d.query.pages[0]||{}).extract||'';
       const cnt={};(x.match(/[\p{L}]+/gu)||[]).forEach(w=>{const k=norm(w);if(k.length>=3&&!SEM_STOP.has(k))cnt[k]=(cnt[k]||0)+1});
-      const mx=Math.max(2,...Object.values(cnt).filter((v,i,a)=>true));Object.entries(cnt).forEach(([k,v])=>{if(v>=2)put(k,Math.round(22+42*Math.log(v)/Math.log(mx)))})}catch(e){}
+      const mx=Math.max(2,...Object.values(cnt).filter((v,i,a)=>true));Object.entries(cnt).forEach(([k,v])=>{if(v>=3)put(k,Math.round(20+32*Math.log(v)/Math.log(mx)))});
+      const lk=await wapi('fr',{action:'query',prop:'links',titles:T,redirects:'1',plnamespace:'0',pllimit:'max'});((lk.query.pages[0]||{}).links||[]).slice(0,400).forEach(l=>{const x=l.title.replace(/\s*\(.*\)$/,'');if(!/\s/.test(x)&&!/\d/.test(x))put(x,54)})}catch(e){}
   }else{
     try{const d=await (await fetch('https://api.datamuse.com/words?ml='+encodeURIComponent(word)+'&max=300')).json();d.forEach((x,i)=>put(x.word,Math.round(90-70*i/Math.max(1,d.length-1))))}catch(e){}
     try{const d=await (await fetch('https://api.datamuse.com/words?rel_syn='+encodeURIComponent(word)+'&max=40')).json();d.forEach(x=>put(x.word,88))}catch(e){}
@@ -1440,6 +1441,7 @@ en:{
 6:{c:'garden summer orange castle rabbit pencil dragon window monkey cookie planet guitar flower friend bridge winter rocket banana pirate island',h:'zephyr quartz sphinx jockey rhythm oxygen frenzy quiver zealot'},
 7:{c:'chicken kitchen picture rainbow blanket teacher dolphin holiday machine monster penguin pumpkin science weather library',h:'quetzal jacuzzi axolotl kumquat rhubarb cryptic jukebox pharynx'},
 8:{c:'elephant mountain sandwich dinosaur football birthday treasure umbrella computer airplane hospital vacation kangaroo',h:'zeppelin quixotic jacquard sphagnum gymkhana zucchini mnemonic'}}};
+if(window.MOTUS_X)for(const k in MOTUS_X)if(MOTUS.fr[k])MOTUS.fr[k].c=[...new Set((MOTUS.fr[k].c+' '+MOTUS_X[k]).split(' ').filter(Boolean))].join(' ');
 GAME_IMPL.motus=root=>{
   const c=cl();let cfg=store.get('lv-motus',{len:5,d:'med'}),word,rows,cur,done,kb,fixed,auto,MAXT;
   setup();
@@ -1452,7 +1454,7 @@ GAME_IMPL.motus=root=>{
     $('#go').onclick=()=>{store.set('lv-motus',cfg);start()};
   }
   function start(){
-    const pool=MOTUS[c][cfg.len][cfg.d==='hard'?'h':'c'].split(' ');word=rnd(pool).toUpperCase();rows=[];done=false;kb={};MAXT=cfg.d==='easy'?7:6;
+    const pool=(cfg.d==='hard'?MOTUS[c][cfg.len].h+' '+MOTUS[c][cfg.len].c:MOTUS[c][cfg.len].c).split(' ').filter(Boolean);word=rnd(pool).toUpperCase();rows=[];done=false;kb={};MAXT=cfg.d==='easy'?7:6;
     fixed={};if(cfg.d!=='hard')fixed[0]=word[0];if(cfg.d==='easy'){const j=1+Math.floor(Math.random()*(cfg.len-1));fixed[j]=word[j]}
     cur='';auto=new Set();justRow=-1;won=false;autofill();draw('');
     keyHandler=e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.target.tagName==='INPUT')return;if(e.key==='Enter'){e.preventDefault();press('ENTER')}else if(e.key==='Backspace')press('DEL');else if(/^[a-zA-Z]$/.test(e.key))press(e.key.toUpperCase())};
