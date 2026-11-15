@@ -396,7 +396,7 @@ input:focus,select:focus{box-shadow:0 0 0 4px rgba(255,207,63,.14)}
 <div class="bgfx"><i></i><i></i><i></i></div><div id="scrim"></div><div id="toasts"></div><canvas id="confetti"></canvas>
 <nav id="drawer" aria-label="menu"></nav>
 <div id="app"></div>
-<script src="d-pedanto.js"></script><script src="d-semantik.js"></script><script src="d-motus.js"></script>
+<script src="d-pedanto.js"></script><script src="d-semantik.js"></script><script src="d-motus.js"></script><script src="d-qbank1.js"></script><script src="d-qbank2.js"></script><script src="d-qbank3.js"></script><script src="d-qbank4.js"></script><script src="d-qbank5.js"></script><script src="d-qbank6.js"></script><script src="d-qbank7.js"></script><script src="d-qbank8.js"></script>
 <script>
 /* =====================================================================
    LUDOVERSE — un site de mini-jeux
@@ -1207,6 +1207,7 @@ en:[
 "Name a dessert|ice cream,cake,chocolate cake,apple pie,cheesecake,brownie,cookie,pudding,tiramisu,doughnut/donut,cupcake,trifle,crumble,pancake,waffle,mousse,custard,fruit salad,eclair,macaron,muffin,jelly,sorbet,creme brulee,banoffee pie,pavlova,panna cotta,profiterole,lemon tart,eton mess,sticky toffee pudding,baklava,churros,mochi,key lime pie",
 "Name an item of clothing|shirt,trousers/pants,t shirt,jeans,dress,skirt,jumper/sweater,socks,jacket,coat,hat,shorts,scarf,gloves,hoodie,tie,suit,pyjamas,vest,cardigan,leggings,blouse,cap,beanie,kimono,poncho,sari,kilt,dungarees/overalls,tuxedo,cape,tunic,parka,jumpsuit,bow tie",
 "Name a board game|monopoly,chess,scrabble,cluedo/clue,snakes and ladders,uno,checkers/draughts,risk,trivial pursuit,connect four,battleship,guess who,catan,ludo,backgammon,jenga,pictionary,articulate,cranium,mouse trap,operation,ticket to ride,carcassonne,codenames,pandemic,dominoes,mahjong,go,othello,dixit,azul,splendor,7 wonders,hanabi,mysterium"]};
+if(window.QB_X)QBANK.fr=[...new Map([...QBANK.fr,...QB_X].map(x=>[norm(x.split('|')[0]),x])).values()];
 /* Jalons (descente / montée infinies) */
 const MILESTONES={abyss:[
 [50,{fr:'Limite des plongeurs loisirs',en:'Recreational diving limit',es:'Límite del buceo recreativo',de:'Grenze für Sporttaucher'}],
