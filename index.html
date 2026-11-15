@@ -396,6 +396,7 @@ input:focus,select:focus{box-shadow:0 0 0 4px rgba(255,207,63,.14)}
 <div class="bgfx"><i></i><i></i><i></i></div><div id="scrim"></div><div id="toasts"></div><canvas id="confetti"></canvas>
 <nav id="drawer" aria-label="menu"></nav>
 <div id="app"></div>
+<script src="d-pedanto.js"></script><script src="d-semantik.js"></script>
 <script>
 /* =====================================================================
    LUDOVERSE — un site de mini-jeux
@@ -487,6 +488,10 @@ const fmt=n=>new Intl.NumberFormat(lang).format(n);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let x=Math.imul(a^a>>>15,1|a);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296}}
 /* Numéro du jour : 15 novembre 2026 = n°1 */
+/* Ordre du jour fixe et sans répétition : liste mélangée une seule fois avec une graine fixe */
+function seededShuffle(arr,seed){const a=arr.slice();let t=seed>>>0;const rnd=()=>{t+=0x6D2B79F5;let r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296};for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function dailyPick(list,n,first,seed){/* jours 1..first.length : liste d'origine ; ensuite : grande liste mélangée, jamais deux fois le même */
+  if(n<=first.length)return first[n-1];const seen=new Set(first.map(x=>norm(x)));const L=seededShuffle([...new Set(list)].filter(x=>!seen.has(norm(x))),seed);if(!L.length)return first[(n-1)%first.length];return L[(n-1-first.length)%L.length]}
 function dayNum(){const d=new Date();const u=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());return Math.max(1,Math.floor((u-Date.UTC(2026,10,15))/864e5)+1)}
 function dailyBar(n){return `<div class="bar daily"><span>📅 <b>n°${n}</b> · ${new Date().toLocaleDateString(lang,{weekday:'long',day:'numeric',month:'long'})}</span><span>⏳ ${t('newIn')} <b class="cd">--:--:--</b></span></div>`}
 function startCountdown(){const day=dayNum();const upd=()=>{const d=new Date(),m=new Date(d);m.setHours(24,0,0,0);const s=Math.max(0,Math.floor((m-d)/1000));const p=x=>String(x).padStart(2,'0');document.querySelectorAll('.cd').forEach(e=>e.textContent=`${p(Math.floor(s/3600))}:${p(Math.floor(s%3600/60))}:${p(s%60)}`);if(dayNum()!==day)route()};upd();timers.push(setInterval(upd,1000))}
@@ -682,8 +687,46 @@ en:[
 "circus|clown 84,tent 72,big top 88,acrobat 82,juggler 82,trapeze 80,tamer 78,lion 60,ring 70,show 74,elephant 54,tightrope 82,magician 66,performer 64,act 62,artist 60,hoop 56,fair 66,carnival 74,ringmaster 88|I have a ring but no wedding.|The clown makes children laugh in me.|My big top travels from town to town.",
 "book|novel 84,reading 82,read 80,page 76,author 74,writer 72,library 80,chapter 76,story 64,publisher 70,bookshop 82,cover 64,paper 54,tale 66,poem 58,dictionary 70,manuscript 74,text 66,reader 70,comic 62,printing 68,bookcase 70|I have leaves but I'm not a tree.|People devour me without eating me.|I have a spine, a cover and chapters."]};
 function parseSem(s){const p=s.split('|');const w={};p[1].split(',').forEach(x=>{const m=x.trim().match(/^(.*)\s(-?\d+)$/);if(m)w[norm(m[1])]=+m[2]});w[norm(p[0])]=100;return{s:p[0],w,r:p.slice(2)}}
+const SEM_SEC={synonymes:88,'quasi-synonymes':82,'apparentés':72,'dérivés':70,hyperonymes:74,hyponymes:70,'méronymes':66,holonymes:66,vocabulaire:64,'composés':58,variantes:80,'variantes orthographiques':80,'antonymes':40};
+const SEM_STOP=new Set('les des une est son ses sur par pour dans qui que avec aux ont été elle ils plus mais comme cette ces sont aussi entre leur leurs tout tous dont très peut sans sous deux être fait faire avait selon ainsi même lors après avant chez notamment autres autre ceux celle celui alors donc encore souvent environ part peu certains certaines nombre premier première fois années année siècle depuis jusqu where with that this from have were which their they them been into than then also about there these such other some more most only over very when what your will would could should because while being both each many much made used like'.split(' '));
+const semClean=x=>x.replace(/\{\{[^{}]*\}\}/g,'').replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g,'$1').replace(/'''?/g,'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+async function semExists(w,c){const k='lv-semok-'+c;const m=store.get(k,{});if(m[w]!=null)return m[w];let ok=true;
+  try{if(c==='fr'){const u=`https://fr.wiktionary.org/w/api.php?action=query&format=json&formatversion=2&origin=*&titles=${encodeURIComponent(w)}`;const d=await (await fetch(u)).json();ok=!d.query.pages[0].missing}
+  else{const d=await (await fetch('https://api.datamuse.com/words?sp='+encodeURIComponent(w)+'&max=1')).json();ok=!!(d[0]&&norm(d[0].word)===norm(w))}}catch(e){ok=true}
+  m[w]=ok;store.set(k,m);return ok}
+async function semAuto(word,c){
+  const ck='lv-semauto-'+c+'-'+norm(word),cached=store.get(ck,null);if(cached&&cached.v===1)return cached;
+  const W={},put=(x,s)=>{x=norm(x).trim();if(!x||x.includes(' ')||x.length<2||SEM_STOP.has(x))return;if(W[x]==null||W[x]<s)W[x]=s};
+  let defs=[];const me=norm(word);
+  if(c==='fr'){
+    try{const u=`https://fr.wiktionary.org/w/api.php?action=parse&format=json&formatversion=2&origin=*&prop=wikitext&redirects=1&page=${encodeURIComponent(word)}`;const d=await (await fetch(u)).json();
+      const fr=(d.parse.wikitext.split(/\n== *\{\{langue\|/).find(x=>x.startsWith('fr}}'))||'');
+      let sec='';fr.split('\n').forEach(l=>{const h=l.match(/^=+ *\{\{S\|([^|}]+)/);if(h){sec=h[1].trim();return}
+        if(/^# /.test(l)&&/^(nom|adjectif|verbe)/.test(sec)){const t=semClean(l.slice(2));if(t.length>8)defs.push(t);[...l.matchAll(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g)].forEach((m,i)=>put(m[1],defs.length<=1?72-i:64-i))}
+        else if(SEM_SEC[sec]&&/\[\[/.test(l))[...l.matchAll(/\[\[([^\]|#]*)/g)].forEach(m=>put(m[1],SEM_SEC[sec]))})}catch(e){}
+    try{const T=word[0].toUpperCase()+word.slice(1);const d=await wapi('fr',{action:'query',prop:'extracts',explaintext:'1',redirects:'1',titles:T});const x=(d.query.pages[0]||{}).extract||'';
+      const cnt={};(x.match(/[\p{L}]+/gu)||[]).forEach(w=>{const k=norm(w);if(k.length>=3&&!SEM_STOP.has(k))cnt[k]=(cnt[k]||0)+1});
+      const mx=Math.max(2,...Object.values(cnt).filter((v,i,a)=>true));Object.entries(cnt).forEach(([k,v])=>{if(v>=2)put(k,Math.round(22+42*Math.log(v)/Math.log(mx)))})}catch(e){}
+  }else{
+    try{const d=await (await fetch('https://api.datamuse.com/words?ml='+encodeURIComponent(word)+'&max=300')).json();d.forEach((x,i)=>put(x.word,Math.round(90-70*i/Math.max(1,d.length-1))))}catch(e){}
+    try{const d=await (await fetch('https://api.datamuse.com/words?rel_syn='+encodeURIComponent(word)+'&max=40')).json();d.forEach(x=>put(x.word,88))}catch(e){}
+    try{const d=await (await fetch('https://en.wiktionary.org/api/rest_v1/page/definition/'+encodeURIComponent(word))).json();(d.en||[]).forEach(e=>(e.definitions||[]).forEach(df=>{const t=semClean(df.definition||'');if(t.length>8)defs.push(t)}))}catch(e){}
+  }
+  delete W[me];W[me]=100;
+  const mask=t=>t.replace(new RegExp('\\b'+word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\w*','gi'),'…');
+  const L=[...word].length,f=word[0].toUpperCase(),z=word[word.length-1].toUpperCase();
+  const r=[];defs.slice(0,2).forEach(d=>r.push(mask(d).slice(0,220)));
+  r.push(c==='fr'?`Je m'écris en ${L} lettres, je commence par « ${f} » et je finis par « ${z} ».`:`I have ${L} letters, I start with "${f}" and end with "${z}".`);
+  while(r.length<3)r.unshift(c==='fr'?`Je commence par la lettre « ${f} ».`:`I start with the letter "${f}".`);
+  const P={v:1,s:word,w:W,r:r.slice(0,3),auto:true};if(Object.keys(W).length>15)store.set(ck,P);return P}
 GAME_IMPL.semantik=root=>{
-  const c=cl(),n=dayNum(),P=parseSem(SEMRAW[c][(n-1)%SEMRAW[c].length]);
+  const c=cl(),n=dayNum();
+  if(n<=SEMRAW[c].length||!window.SEM_LIST)return semRun(root,parseSem(SEMRAW[c][(n-1)%SEMRAW[c].length]),c,n);
+  const word=dailyPick(SEM_LIST[c],n,SEMRAW[c].map(x=>x.split('|')[0]),c==='fr'?2026111:2026112);
+  root.innerHTML=`${dailyBar(n)}<p class="muted">${t('loading')}</p>`;
+  semAuto(word,c).then(P=>{if(root.isConnected)semRun(root,P,c,n)}).catch(()=>{if(root.isConnected)semRun(root,{s:word,w:{[norm(word)]:100},r:[],auto:true},c,n)});
+};
+function semRun(root,P,c,n){
   const key=`lv-sem-${c}-${n}`,aiKey=`lv-semai-${c}-${n}`;
   const st=store.get(key,{g:[],won:false});const ai=store.get(aiKey,{});let lastW=st.g.length?st.g[st.g.length-1].w:null,busy=false;
   const hash=s=>{let h=7;for(const ch of s)h=(h*31+ch.charCodeAt(0))>>>0;return h};
@@ -697,6 +740,7 @@ GAME_IMPL.semantik=root=>{
     const n0=norm(word).replace(/[^a-z0-9\- ]/g,'');if(!n0)return null;
     const k=lookup(n0);if(k!=null)return{w:n0,s:k};
     if(ai[n0]!=null)return ai[n0]===false?false:{w:n0,s:ai[n0]};
+    if(P.auto&&!SAMPLE){$('#msg').textContent='…';const ok=await semExists(n0,c);$('#msg').textContent='';if(!ok)return false}
     if(SAMPLE){
       $('#msg').textContent=t('sem_wait');
       const r=await askClaude(`You score words for a daily semantic guessing game like Cemantix, in ${c==='fr'?'French':'English'}. Secret word: "${P.s}". Guessed word: "${n0}". Reply ONLY with JSON {"valid":boolean,"score":number}. valid=false if "${n0}" is not a real ${c==='fr'?'French':'English'} word. score = semantic closeness to the secret word from -20 to 95: 80-95 near-synonym or very strongly linked, 55-79 strongly related, 30-54 related, 5-29 weakly related, below 5 unrelated. Never 100.`);
@@ -720,7 +764,7 @@ GAME_IMPL.semantik=root=>{
     if(r===false){$('#msg').textContent=t('sem_unknown')+' : '+v;fx.shake(inp);return}if(!r)return;
     if(st.g.some(g=>g.w===r.w)){lastW=r.w;$('#msg').textContent=t('sem_already');draw();return}
     st.g.push({w:r.w,s:r.s,n:st.g.length+1});lastW=r.w;$('#msg').textContent='';if(r.s>=100){st.won=true;fx.confetti()}else if(r.s>=75)fx.toast('🔥 '+esc(r.w)+' · '+r.s+'°C');store.set(key,st);draw();};
-};
+}
 
 /* =====================================================================
    3. PÉDANTO — article Wikipédia du jour (intro), contenu intégré en secours
@@ -743,11 +787,17 @@ en:[
 {t:'Bee',x:"The bee is a flying insect known for making honey and wax. It usually lives in a colony inside a hive, organised around a queen who lays the eggs. By visiting flowers to collect nectar and pollen, the bee plays an essential role in the pollination of plants."}]};
 const STOP={fr:'le la les l de des du d un une et a à au aux en est son sa ses se qui que qu par pour dans sur il elle ils ne pas ce cette comme y s n on ou'.split(' '),en:'the a an of and is in to it its by for on as with was are from at that this which who s or'.split(' ')};
 function trimExtract(x){const paras=x.split(/\n+/).filter(p=>p.trim().length>40);let out='';for(const p of paras){if(out.length>1300)break;out+=(out?'\n':'')+p.trim()}if(out.length>2200){const cut=out.slice(0,2200);out=cut.slice(0,cut.lastIndexOf('.')+1)||cut}return out}
+async function pedTitle(c,n){
+  if(n<=PTITLES[c].length)return PTITLES[c][n-1];
+  let L=c==='fr'?(window.PED_LIST_FR||[]):store.get('lv-pedlist-en',null);
+  if(c!=='fr'&&!L){L=[];let cont={};do{const d=await wapi('en',{action:'query',prop:'links',titles:'Wikipedia:Vital articles/Level/3',redirects:'1',plnamespace:'0',pllimit:'max',...cont});L.push(...((d.query.pages[0]||{}).links||[]).map(x=>x.title));cont=d.continue||null}while(cont);
+    L=L.filter(x=>!/sex|porn|prostitu|rape|erot|suicid|nazi|genocide|torture|hitler|murder|terror|^list/i.test(x)&&!/^\d/.test(x)).sort();store.set('lv-pedlist-en',L)}
+  if(!L||!L.length)return PTITLES[c][(n-1)%PTITLES[c].length];
+  return dailyPick(L,n,PTITLES[c],c==='fr'?3026111:3026112)}
 GAME_IMPL.pedanto=root=>{
   const c=cl(),c0=c,n=dayNum(),key=`lv-ped-${c}-${n}`;
   root.innerHTML=`${dailyBar(n)}${cnote()}<p class="intro">${t('ped_intro')}</p><div id="pb"><p class="muted">${t('loading')}</p></div>`;startCountdown();
-  const title=PTITLES[c][(n-1)%PTITLES[c].length];
-  wapi(c,{action:'query',prop:'extracts',explaintext:'1',exintro:'1',redirects:'1',titles:title}).then(d=>{const p=d.query.pages[0];if(!p||!p.extract)throw new Error('empty');play(p.title.replace(/\s*\(.*\)\s*$/,''),trimExtract(p.extract),true)}).catch(()=>{const F=PED[c][(n-1)%PED[c].length];play(F.t,F.x,false)});
+  pedTitle(c,n).then(title=>wapi(c,{action:'query',prop:'extracts',explaintext:'1',exintro:'1',redirects:'1',titles:title})).then(d=>{const p=d.query.pages[0];if(!p||!p.extract)throw new Error('empty');play(p.title.replace(/\s*\(.*\)\s*$/,''),trimExtract(p.extract),true)}).catch(()=>{const F=PED[c][(n-1)%PED[c].length];play(F.t,F.x,false)});
   function play(T,X,live){
     if(!root.isConnected)return;
     const keyOf=w=>{let k=norm(w);if(k.length>3&&/[sx]$/.test(k))k=k.slice(0,-1);return k};
