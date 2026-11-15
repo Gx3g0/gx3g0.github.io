@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G3verse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0f1a;--panel:#171933;--panel2:#20234a;--text:#f3f3fb;--muted:#9fa2c8;--line:#2d3060;--accent:#ffcf3f;--good:#3ddc84;--bad:#ff5d73;--mid:#ffb02e}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;line-height:1.45}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 12% 8%,#3a24896b,transparent 42%),radial-gradient(circle at 90% 95%,#0b6b6b55,transparent 45%);pointer-events:none;z-index:-1}
+h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif;margin:0;letter-spacing:-.01em}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;border-radius:12px;padding:10px 16px;background:var(--panel2);color:var(--text);transition:transform .1s,background .2s}
+button:hover{background:#2b2f63}
+button:active{transform:scale(.97)}
+button.primary{background:var(--accent);color:#1b1b1b;font-weight:700}
+button.primary:hover{background:#ffdb66}
+button:disabled{opacity:.4;cursor:default}
+input,select{font:inherit;background:var(--panel2);color:var(--text);border:2px solid var(--line);border-radius:12px;padding:10px 14px;outline:none;min-width:0}
+input:focus,select:focus{border-color:var(--accent)}
+input[type=file]{padding:8px;font-size:.9rem;max-width:100%}
+.muted{color:var(--muted)}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:10px 16px;background:#0e0f1ad9;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.burger{width:46px;height:46px;padding:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.burger i{display:block;width:22px;height:3px;background:var(--text);border-radius:3px}
+.logo{font-family:'Bricolage Grotesque';font-weight:800;font-size:1.25rem}
+.crumb{color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#scrim{position:fixed;inset:0;background:#0008;opacity:0;pointer-events:none;transition:opacity .25s;z-index:40}
+#scrim.show{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;left:0;bottom:0;width:min(320px,86vw);background:var(--panel);border-right:1px solid var(--line);z-index:50;transform:translateX(-102%);transition:transform .28s cubic-bezier(.3,.8,.3,1);overflow-y:auto;padding:16px}
+#drawer.open{transform:none}
+.dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-family:'Bricolage Grotesque';font-size:1.2rem}
+.dhead .x{padding:6px 12px}
+.dsec{margin-bottom:22px}
+.dlabel{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;font-weight:700}
+.langs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.lang{padding:9px 10px;text-align:left;font-size:.93rem}
+.lang.on{background:var(--accent);color:#1b1b1b;font-weight:700}
+.ditem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-weight:500}
+.ditem:hover{background:var(--panel2)}
+.ditem.on{background:var(--panel2);outline:2px solid var(--accent)}
+.dem{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;font-size:1.1rem}
+main{padding:0 16px 60px}
+.hero{max-width:1100px;margin:0 auto;padding:44px 0 22px;text-align:center}
+.hero h1{font-size:clamp(2.6rem,7vw,4.4rem);font-weight:800;background:linear-gradient(90deg,#ffcf3f,#ff6b9a,#8f7bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:1.1rem;margin:8px 0 24px}
+.searchrow{display:flex;flex-direction:column;align-items:center;gap:12px}
+.searchrow input{width:min(460px,100%)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{padding:7px 14px;border-radius:99px;font-size:.92rem}
+.chip.on{background:var(--text);color:var(--bg);font-weight:700}
+.grid{max-width:1100px;margin:10px auto 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:transform .18s,border-color .18s,box-shadow .18s;overflow:hidden;cursor:pointer;text-align:left;color:var(--text)}
+.card:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:var(--c)}
+.card:hover{transform:translateY(-4px);border-color:var(--c);box-shadow:0 12px 30px -12px var(--c);background:var(--panel)}
+.cicon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-size:2rem;background:color-mix(in srgb,var(--c) 22%,transparent)}
+.card h3{font-size:1.3rem;margin-top:4px}
+.card p{margin:0;color:var(--muted);font-size:.95rem;flex:1}
+.cfoot{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:.75rem;padding:3px 9px;border-radius:99px;background:var(--panel2);color:var(--muted)}
+.tag.day{background:#ffcf3f22;color:#ffe08a}
+.insp{font-size:.78rem;color:var(--muted);font-style:italic}
+.playbtn{margin-top:6px;font-weight:700;color:var(--c)}
+.gwrap{max-width:820px;margin:0 auto;padding-top:22px}
+.ghead{display:flex;gap:16px;align-items:center;margin-bottom:20px}
+.gicon{flex:none;width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:2.2rem;background:color-mix(in srgb,var(--c) 25%,transparent)}
+.ghead h1{font-size:1.9rem}
+.ghead p{margin:2px 0 0;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:14px;font-weight:500}
+.bar.daily{background:linear-gradient(90deg,#ffcf3f1f,#ff6b9a1a);border-color:#ffcf3f55}
+.intro{color:var(--muted);margin:0 0 14px}
+.note{color:var(--muted);font-size:.85rem;margin-top:14px}
+.cnote{background:#ffcf3f1a;border:1px solid #ffcf3f55;color:#ffe08a;padding:8px 12px;border-radius:12px;font-size:.88rem;margin-bottom:12px}
+.inrow{display:flex;gap:8px}
+.inrow input{flex:1}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.msg{min-height:1.5em;margin:8px 0;font-weight:500}
+.center{text-align:center}
+.big{font-size:1.5rem;font-family:'Bricolage Grotesque';font-weight:700}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button.on{background:var(--accent);color:#1b1b1b;font-weight:700}
+.result{margin-top:14px;padding:14px;border-radius:14px;background:var(--panel2)}
+/* loyer */
+.listing{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.lmedia{display:grid;grid-template-columns:1fr 1fr;min-height:260px}
+.lphoto{position:relative;background:linear-gradient(135deg,#ff8a3d55,#8f7bff44);display:grid;place-items:center;font-size:5rem;overflow:hidden}
+.lphoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lphoto .cap{position:absolute;left:8px;bottom:8px;font-size:.72rem;background:#000a;padding:2px 8px;border-radius:6px}
+.smap{position:relative;overflow:hidden;background:#aac7d8;height:260px}
+.smap .fb{position:absolute;inset:0}
+.smap img{position:absolute;width:256px;height:256px}
+.smap .pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);font-size:2.2rem;filter:drop-shadow(0 2px 3px #0008);z-index:3}
+.smap .zb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px;z-index:4}
+.smap .zb button{width:32px;height:32px;padding:0;background:#fff;color:#111;font-weight:800}
+.smap .attr{position:absolute;right:0;bottom:0;font-size:10px;background:#fffc;color:#333;padding:1px 5px;z-index:4}
+.smap .lbl{position:absolute;left:8px;top:8px;background:#000b;padding:3px 9px;border-radius:8px;font-size:.85rem;z-index:4}
+.linfo{padding:16px}
+.linfo h2{font-size:1.5rem;margin-bottom:10px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pills span{background:var(--panel2);padding:6px 12px;border-radius:99px;font-size:.95rem}
+.pills span b{font-size:1.05rem}
+.q{margin:20px 0 10px}
+.guessbox{display:flex;flex-direction:column;gap:10px}
+.guessbox input[type=range]{width:100%;accent-color:var(--accent);padding:0;border:none;background:none}
+.numrow{display:flex;align-items:center;gap:8px}
+.numrow input{width:130px;font-size:1.2rem;font-weight:700}
+@media(max-width:620px){.lmedia{grid-template-columns:1fr}.lphoto{height:180px}}
+/* semantik */
+.semlist{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.srow{display:grid;grid-template-columns:44px 1fr 74px 30px 120px;align-items:center;gap:8px;background:var(--panel);padding:7px 12px;border-radius:10px}
+.srow.last{outline:2px solid var(--accent)}
+.srow .n{color:var(--muted);font-size:.85rem}
+.srow .w{font-weight:700}
+.srow .tmp{text-align:right;font-variant-numeric:tabular-nums}
+.meter{height:8px;background:#ffffff14;border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:9px}
+.riddle{background:linear-gradient(135deg,#a66cff26,#ff6b9a1f);border:1px solid #a66cff66;border-radius:14px;padding:10px 14px;margin:6px 0;font-style:italic}
+@media(max-width:520px){.srow{grid-template-columns:32px 1fr 62px 26px 54px}}
+/* pedanto */
+.ptitle{font-family:'Bricolage Grotesque';font-size:1.6rem;margin-bottom:12px}
+.ptext{font-size:1.06rem;line-height:2}
+.hid{display:inline-block;height:1.1em;vertical-align:-.15em;background:#3a3e78;border-radius:4px;cursor:help}
+.new{background:#ffcf3f40;border-radius:4px;padding:0 2px}
+.glog{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.glog span{font-size:.85rem;background:var(--panel2);padding:4px 10px;border-radius:99px}
+/* dessin */
+.stepper{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:14px 0}
+.passbox{text-align:center;padding:50px 20px}
+.passbox .who{font-size:2.2rem;font-family:'Bricolage Grotesque';font-weight:800;color:var(--accent);margin:8px 0 22px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.sw{width:30px;height:30px;padding:0;border-radius:50%;border:3px solid transparent}
+.sw.on{border-color:var(--accent)}
+.sz{width:38px;height:34px;padding:0;display:grid;place-items:center}
+.sz i{display:block;background:var(--text);border-radius:50%}
+.sz.on,.er.on{outline:2px solid var(--accent)}
+.sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.cv{width:100%;aspect-ratio:10/7;background:#fff;border-radius:14px;touch-action:none;cursor:crosshair;display:block}
+.prompt{background:var(--panel2);padding:12px 16px;border-radius:14px;font-size:1.25rem;font-weight:700;margin-bottom:12px}
+.album{display:flex;flex-direction:column;gap:12px}
+.aitem{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.aitem .by{color:var(--muted);font-size:.9rem;margin-bottom:6px}
+.aitem .txt{font-size:1.25rem;font-weight:700}
+.aitem img{width:100%;border-radius:12px;display:block}
+/* wiki */
+.wroute{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wroute b{background:var(--panel2);padding:4px 10px;border-radius:8px}
+.article{background:#fff;color:#202122;border-radius:16px;padding:22px;font-family:sans-serif;overflow-x:auto}
+.article h2.at{font-family:Georgia,serif;font-weight:400;font-size:2rem;border-bottom:1px solid #a2a9b1;padding-bottom:6px;margin-bottom:14px}
+.article p{line-height:1.65}
+.article .mini{font-family:Georgia,serif;font-size:1.1rem;line-height:1.75;margin:0}
+.wikibody{font-size:.95rem;line-height:1.6}
+.wikibody h2,.wikibody h3{font-family:Georgia,serif;font-weight:400;border-bottom:1px solid #c8ccd1;margin:1em 0 .4em;letter-spacing:0}
+.wikibody img{max-width:100%;height:auto}
+.wikibody table{max-width:100%;border-collapse:collapse;font-size:.88rem}
+.wikibody .infobox,.wikibody .infobox_v2,.wikibody .infobox_v3{float:right;margin:0 0 10px 14px;max-width:300px;border:1px solid #c8ccd1;background:#f8f9fa;padding:6px}
+.wikibody .thumb,.wikibody figure{max-width:280px}
+.wikibody .tright,.wikibody figure.mw-halign-right{float:right;margin:0 0 10px 12px}
+.wikibody .tleft,.wikibody figure.mw-halign-left{float:left;margin:0 12px 10px 0}
+.wl{color:#3366cc;cursor:pointer;text-decoration:none}
+.wl:hover{text-decoration:underline}
+.wl.target{background:#ffeb8a}
+.wpath{font-size:.88rem;color:var(--muted);margin:10px 0}
+.wsticky{position:sticky;top:68px;z-index:5}
+/* scene / doublage */
+.scenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.scard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px}
+.scard:hover{border-color:var(--accent);background:var(--panel)}
+.scard .se{font-size:2rem}
+.scard .badge{align-self:flex-start;font-size:.8rem;background:var(--accent);color:#1b1b1b;font-weight:700;padding:2px 9px;border-radius:99px}
+.scard.imp{border-style:dashed}
+.cast{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cast span{padding:4px 12px;border-radius:99px;font-weight:700;font-size:.9rem}
+.linecard{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:22px;text-align:center}
+.linecard .who{font-weight:800;margin-bottom:8px}
+.linecard .txt{font-size:1.5rem;font-weight:700;font-family:'Bricolage Grotesque';line-height:1.3}
+.lines{display:flex;flex-direction:column;gap:4px;margin-top:14px}
+.lines div{padding:6px 10px;border-radius:10px;background:var(--panel);font-size:.92rem;cursor:pointer;display:flex;gap:8px}
+.lines div.on{outline:2px solid var(--accent)}
+.rec{background:#ff3d57!important;color:#fff!important;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+video{width:100%;border-radius:14px;background:#000;max-height:420px}
+.phr{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;background:var(--panel);padding:8px 10px;border-radius:12px;margin-top:6px}
+.phr .tm{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem}
+.phr .bt{display:flex;gap:4px;flex-wrap:wrap}
+.phr .bt button{padding:6px 10px;font-size:.85rem}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}
+/* taille */
+.tgrid{position:relative;height:400px;margin-top:40px;border-radius:14px;background-color:#f6f3e8;border:2px solid #d9d2bd;overflow:visible;touch-action:none}
+.gl{position:absolute;left:0;right:0;border-top:1px solid #c9c0a5;height:0}
+.gl span{position:absolute;left:4px;top:-17px;font-size:.72rem;color:#6d6550;font-weight:700}
+.gl.real{border-top:3px dashed #e63946;z-index:6}
+.gl.real span{color:#e63946;font-size:.85rem;left:auto;right:6px}
+.vgl{position:absolute;top:0;bottom:0;border-left:1px solid #e3dcc7}
+.tobj{position:absolute;bottom:0;display:flex;align-items:flex-end;justify-content:center;transition:height .6s}
+.tobj .te{display:block;user-select:none;pointer-events:none;transition:width .6s,height .6s;overflow:visible}
+.tobj .tl{pointer-events:none}
+.tinfo{position:relative;z-index:8}
+.tobj .tl{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;font-size:.78rem;color:#3b3626;text-align:center;font-weight:700;background:#fffd;padding:1px 6px;border-radius:6px}
+.tobj.tgt .tl{bottom:calc(100% + 34px)}
+.handle{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);width:44px;height:28px;border-radius:9px;background:var(--accent);color:#1b1b1b;display:grid;place-items:center;font-weight:800;cursor:ns-resize;z-index:7;touch-action:none;box-shadow:0 2px 6px #0006}
+.tgt .te{outline:2px dashed #ffcf3f;outline-offset:2px;border-radius:6px}
+.tinfo{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+/* abysse / space */
+.qawrap{display:grid;grid-template-columns:1fr 190px;gap:16px}
+.qawrap>*{min-width:0}
+.qscene{position:relative;height:440px;border-radius:16px;overflow:hidden}
+.qscene.abyss{background:linear-gradient(#7fd3f3 0%,#2a8ac4 6%,#0d4c8a 25%,#072a5a 50%,#04163a 75%,#01040c 100%)}
+.qscene.space{background:linear-gradient(#000 0%,#0a0630 40%,#1b2a7a 75%,#4d8fd6 92%,#9fd6ff 100%)}
+.qscene.space:after{content:"";position:absolute;inset:0;background-image:radial-gradient(1px 1px at 20% 10%,#fff,transparent),radial-gradient(1px 1px at 70% 25%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 40%,#fff,transparent),radial-gradient(1px 1px at 85% 55%,#fff,transparent),radial-gradient(1px 1px at 10% 60%,#fff,transparent),radial-gradient(1px 1px at 55% 15%,#fff,transparent);pointer-events:none}
+.ms{position:absolute;left:0;right:0;border-top:1px dashed #ffffff55;font-size:.68rem;color:#ffffffcc;padding:1px 4px}
+.hero2{position:absolute;left:50%;transform:translate(-50%,-50%);font-size:2.4rem;transition:top 1.2s cubic-bezier(.3,.8,.3,1),bottom 1.2s cubic-bezier(.3,.8,.3,1);z-index:2;filter:drop-shadow(0 0 6px #fff6)}
+.qscene.space .hero2{transform:translate(-50%,50%)}
+.gauge{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;text-align:center;font-weight:800;margin-top:8px}
+.qcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.qcard .qq{font-size:1.5rem;font-family:'Bricolage Grotesque';font-weight:800;margin:6px 0 14px}
+.taglist{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.taglist span{background:var(--panel2);padding:3px 10px;border-radius:99px;font-size:.85rem}
+@media(max-width:600px){.qawrap{grid-template-columns:1fr 110px}.qscene{height:380px}.hero2{font-size:1.8rem}}
+/* motus */
+.mgrid{display:grid;gap:6px;justify-content:center;margin:6px 0 16px}
+.mrow{display:grid;grid-auto-flow:column;grid-auto-columns:50px;gap:6px}
+.mc{height:50px;border-radius:10px;display:grid;place-items:center;font-size:1.5rem;font-weight:800;background:var(--panel);border:2px solid var(--line);font-family:'Bricolage Grotesque'}
+.mc.fx{color:#ffffff66}
+.mc.g{background:#e8484b;border-color:#e8484b}
+.mc.y{background:#f2b632;border-color:#f2b632;color:#1b1b1b;border-radius:50%}
+.mc.b{background:#2a2d55;border-color:#2a2d55;color:#8c8fb8}
+.kb{display:flex;flex-direction:column;gap:6px;align-items:center}
+.kr{display:flex;gap:5px}
+.k{min-width:34px;padding:12px 6px;font-weight:700;border-radius:8px}
+.k.g{background:#e8484b}.k.y{background:#f2b632;color:#1b1b1b}.k.b{background:#15172e;color:#5d6090}
+.opt{margin-bottom:14px}
+.opt b{display:block;margin-bottom:6px}
+@media(max-width:460px){.mrow{grid-auto-columns:40px}.mc{height:40px;font-size:1.2rem}.k{min-width:27px;padding:11px 3px;font-size:.85rem}}
+
+/* ===================== COUCHE MODERNE ===================== */
+:root{--glass:rgba(23,25,51,.62);--ease:cubic-bezier(.2,.8,.2,1)}
+body:before{display:none}
+.bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(1200px 800px at 50% -10%,#1d1745 0%,#0b0c17 62%)}
+.bgfx i{position:absolute;width:46vmax;height:46vmax;border-radius:50%;filter:blur(90px);opacity:.34;animation:blob 26s var(--ease) infinite alternate}
+.bgfx i:nth-child(1){background:#7b5cff;left:-12vmax;top:-12vmax}
+.bgfx i:nth-child(2){background:#ff4d8d;right:-16vmax;top:22vh;animation-duration:33s;opacity:.2}
+.bgfx i:nth-child(3){background:#00c2d1;left:22vw;bottom:-22vmax;animation-duration:39s;opacity:.2}
+.bgfx:after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:24px 24px;-webkit-mask-image:linear-gradient(#000,transparent 75%);mask-image:linear-gradient(#000,transparent 75%)}
+@keyframes blob{0%{transform:translate(0,0) scale(1)}50%{transform:translate(8vmax,6vmax) scale(1.15)}100%{transform:translate(-6vmax,10vmax) scale(.95)}}
+.topbar{background:rgba(11,12,23,.5);backdrop-filter:blur(18px) saturate(150%);border-bottom:1px solid rgba(255,255,255,.06)}
+.burger{transition:background .2s,transform .2s}
+.burger:hover i:nth-child(1){transform:translateX(3px)}.burger:hover i:nth-child(3){transform:translateX(-3px)}
+.burger i{transition:transform .25s var(--ease)}
+.logo{display:flex;align-items:center;gap:8px}
+.logo .dice{display:inline-block;transition:transform .7s var(--ease)}
+.logo:hover .dice{transform:rotate(360deg) scale(1.2)}
+.logo b{background:linear-gradient(90deg,#ffcf3f,#ff6b9a,#8f7bff,#ffcf3f);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 8s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.hero h1{background-image:linear-gradient(90deg,#ffcf3f,#ff6b9a,#8f7bff,#00c2d1,#ffcf3f);background-size:300% 100%;animation:shine 10s linear infinite,rise .8s var(--ease) both;filter:drop-shadow(0 8px 30px rgba(255,107,154,.25))}
+.hero p{animation:rise .8s .1s var(--ease) both}.searchrow{animation:rise .8s .2s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.chip{transition:all .25s var(--ease)}
+.chip:hover{transform:translateY(-2px)}
+.card{background:linear-gradient(180deg,rgba(32,35,72,.72),rgba(20,22,44,.72));backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.07);animation:rise .7s var(--ease) both;animation-delay:calc(var(--i,0)*70ms);transition:transform .3s var(--ease),border-color .3s,box-shadow .3s}
+.card:after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.13),transparent 42%);opacity:0;transition:opacity .3s;pointer-events:none}
+.card:hover:after{opacity:1}
+.card:hover{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px);box-shadow:0 24px 50px -22px var(--c)}
+.card .cicon{transition:transform .45s var(--ease)}
+.card:hover .cicon{transform:scale(1.14) rotate(-7deg)}
+.card .playbtn{transition:transform .3s var(--ease)}
+.card:hover .playbtn{transform:translateX(6px)}
+button{position:relative;overflow:hidden;transition:transform .15s var(--ease),background .2s,box-shadow .25s}
+button.primary{background:linear-gradient(135deg,#ffdd55,#ffae2b);box-shadow:0 8px 22px -10px #ffb02e}
+button.primary:hover{background:linear-gradient(135deg,#ffe57a,#ffbb45);box-shadow:0 12px 28px -10px #ffb02e;transform:translateY(-1px)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+input,select{transition:border-color .2s,box-shadow .2s,background .2s}
+input:focus,select:focus{box-shadow:0 0 0 4px rgba(255,207,63,.14)}
+.panel,.bar,.listing,.qcard,.srow,.scard,.linecard,.phr{background:var(--glass);backdrop-filter:blur(10px);border-color:rgba(255,255,255,.08)}
+.ghead{animation:rise .6s var(--ease) both}
+.gicon{animation:float 4s ease-in-out infinite;box-shadow:0 10px 30px -12px var(--c)}
+@keyframes float{50%{transform:translateY(-6px) rotate(-4deg)}}
+#game>*{animation:rise .55s var(--ease) both}
+#game>*:nth-child(2){animation-delay:.06s}#game>*:nth-child(3){animation-delay:.12s}#game>*:nth-child(4){animation-delay:.18s}#game>*:nth-child(5){animation-delay:.24s}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.pop{animation:pop .45s var(--ease)}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.srow.last{animation:pop .4s var(--ease)}
+.mrow.reveal .mc{animation:flip .6s var(--ease) both}
+.mrow.reveal .mc:nth-child(2){animation-delay:.08s}.mrow.reveal .mc:nth-child(3){animation-delay:.16s}.mrow.reveal .mc:nth-child(4){animation-delay:.24s}.mrow.reveal .mc:nth-child(5){animation-delay:.32s}.mrow.reveal .mc:nth-child(6){animation-delay:.4s}.mrow.reveal .mc:nth-child(7){animation-delay:.48s}.mrow.reveal .mc:nth-child(8){animation-delay:.56s}
+@keyframes flip{0%{transform:rotateX(90deg);opacity:.3}100%{transform:rotateX(0)}}
+.mrow.win .mc{animation:jump .6s var(--ease) both}
+.mrow.win .mc:nth-child(2){animation-delay:.07s}.mrow.win .mc:nth-child(3){animation-delay:.14s}.mrow.win .mc:nth-child(4){animation-delay:.21s}.mrow.win .mc:nth-child(5){animation-delay:.28s}.mrow.win .mc:nth-child(6){animation-delay:.35s}.mrow.win .mc:nth-child(7){animation-delay:.42s}.mrow.win .mc:nth-child(8){animation-delay:.49s}
+@keyframes jump{40%{transform:translateY(-14px)}}
+.k{transition:transform .1s,background .3s}
+.result{animation:pop .45s var(--ease)}
+#toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:90;pointer-events:none}
+.toast{background:rgba(20,22,44,.92);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);padding:10px 18px;border-radius:14px;font-weight:600;animation:toast 2.8s var(--ease) forwards;box-shadow:0 14px 34px -12px #000}
+@keyframes toast{0%{opacity:0;transform:translateY(20px) scale(.95)}12%,85%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-10px)}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:95;width:100%;height:100%}
+#drawer.open .ditem,#drawer.open .lang{animation:rise .45s var(--ease) both;animation-delay:calc(var(--i,0)*35ms)}
+.ditem{transition:background .2s,transform .2s}.ditem:hover{transform:translateX(4px)}
+/* Pédanto : mots proches */
+.hid{transition:background .3s}
+.hid.near{display:inline-block;overflow:hidden;white-space:nowrap;text-align:center;font-size:.82em;font-weight:700;border-radius:4px;vertical-align:-.1em;line-height:1.35;padding:0 2px;animation:pop .4s var(--ease)}
+.new{animation:pop .5s var(--ease)}
+/* Loyer : galerie */
+.gal{position:relative;overflow:hidden;background:#111}
+.gal img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.06);transition:opacity .9s,transform 6s linear}
+.gal img.on{opacity:1;transform:scale(1)}
+.gal .dots{position:absolute;bottom:8px;right:10px;display:flex;gap:5px;z-index:3}
+.gal .dots i{width:7px;height:7px;border-radius:50%;background:#fff6}.gal .dots i.on{background:#fff}
+.gal .nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:34px;height:34px;padding:0;border-radius:50%;background:#000a;color:#fff}
+.gal .nav.p{left:8px}.gal .nav.n{right:8px}
+/* Abysse / Space : grande scène */
+.gwrap.wide{max-width:1180px}
+.stage{position:relative;height:min(80vh,780px);min-height:540px;border-radius:26px;overflow:hidden;border:1px solid rgba(255,255,255,.08);box-shadow:0 40px 90px -40px #000;isolation:isolate}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.herowrap{position:absolute;left:64%;top:50%;width:clamp(160px,30vh,290px);transform:translate(-50%,-50%);pointer-events:none;z-index:2;filter:drop-shadow(0 18px 30px rgba(0,0,0,.45))}
+.herobob{animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-14px) rotate(2deg)}}
+.stage.abyss .herowrap svg{transform:rotate(168deg)}
+.hud{position:absolute;right:20px;top:18px;text-align:right;z-index:3;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.hud-n{font:800 clamp(2.2rem,5.4vw,4rem)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hud-l{text-transform:uppercase;letter-spacing:.16em;font-size:.72rem;opacity:.85;margin-top:4px}
+.hud-next{margin-top:8px;font-size:.85rem;opacity:.9;background:rgba(0,0,0,.28);display:inline-block;padding:4px 10px;border-radius:99px}
+.hud-round{position:absolute;left:20px;top:18px;z-index:3;font-weight:700;background:rgba(0,0,0,.3);backdrop-filter:blur(8px);padding:6px 12px;border-radius:99px;font-size:.9rem}
+.qpanel{position:absolute;left:18px;bottom:18px;width:min(450px,calc(100% - 36px));z-index:4;background:rgba(8,12,28,.55);backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:18px;box-shadow:0 24px 60px -24px #000;animation:rise .5s var(--ease) both}
+.qpanel .qq{font:800 1.55rem/1.2 'Bricolage Grotesque',sans-serif;margin:2px 0 12px}
+.qpanel .result{background:rgba(255,255,255,.07);margin-top:12px}
+.qpanel .taglist span{background:rgba(255,255,255,.1)}
+.gain{font:800 2rem 'Bricolage Grotesque';animation:pop .5s var(--ease)}
+.diver .leg{transform-box:fill-box;transform-origin:50% 0;animation:kick 1.3s ease-in-out infinite alternate}
+.diver .leg.r{animation-delay:-.65s}
+.diver .arm{transform-box:fill-box;transform-origin:50% 0;animation:sway 3s ease-in-out infinite alternate}
+.diver .arm.r{animation-delay:-1.5s}
+.boost .diver .leg{animation-duration:.4s}
+@keyframes kick{from{transform:rotate(-11deg)}to{transform:rotate(11deg)}}
+@keyframes sway{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.diver .lamp{animation:lampb 2.2s ease-in-out infinite}
+@keyframes lampb{50%{opacity:.55}}
+.rocket .flamebox{transform-box:fill-box;transform-origin:50% 0;transition:transform .6s var(--ease);transform:scaleY(.7)}
+.rocket .flame{transform-box:fill-box;transform-origin:50% 0;animation:flick .08s infinite alternate}
+.boost .rocket .flamebox{transform:scaleY(1.55) scaleX(1.12)}
+.boost .rocket .rbody{animation:rumble .08s infinite}
+@keyframes flick{from{transform:scale(.92,.85)}to{transform:scale(1.05,1.1)}}
+@keyframes rumble{50%{transform:translateX(1.4px)}}
+@media(max-width:680px){.stage{height:86vh;min-height:560px}.herowrap{left:50%;top:30%;width:130px}.hud{top:12px;right:12px}.hud-round{top:12px;left:12px}.qpanel{left:8px;right:8px;bottom:8px;width:auto;padding:14px}.qpanel .qq{font-size:1.25rem}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="bgfx"><i></i><i></i><i></i></div><div id="scrim"></div><div id="toasts"></div><canvas id="confetti"></canvas>
+<nav id="drawer" aria-label="menu"></nav>
+<div id="app"></div>
+<script>
+/* =====================================================================
+   LUDOVERSE — un site de mini-jeux
+   ===================================================================== */
+const LANGS={fr:{flag:'🇫🇷',name:'Français'},en:{flag:'🇬🇧',name:'English'},es:{flag:'🇪🇸',name:'Español'},de:{flag:'🇩🇪',name:'Deutsch'}};
+let lang=(()=>{try{const s=JSON.parse(localStorage.getItem('lv-lang'));if(s&&LANGS[s])return s}catch(e){}const n=(navigator.language||'fr').slice(0,2);return LANGS[n]?n:'fr'})();
+
+const UI={
+fr:{tagline:"Plein de jeux, un seul endroit. Choisis-en un et joue !",search:"Rechercher un jeu…",all:"Tous",solo:"Solo",party:"Entre amis",words:"Mots",guess:"Devinettes",daily:"Quotidien",play:"Jouer",menu:"Menu",language:"Traduire / Langue",games:"Choisir un autre jeu",home:"Accueil",inspired:"Inspiré de",score:"Score",round:"Manche",next:"Suivant",validate:"Valider",restart:"Rejouer",tries:"Essais",noresult:"Aucun jeu trouvé.",month:"mois",loading:"Chargement…",newIn:"Nouveau dans",comeback:"Reviens demain pour le n°{n} !",
+contentNote:"Le contenu de ce jeu existe en français et en anglais : il s'affiche en anglais pour ta langue.",
+offline:"Wikipédia n'est pas joignable depuis cette page : contenu intégré utilisé. Ouvre le fichier G3verse.html (ou ton site hébergé) pour jouer avec le vrai Wikipédia.",source:"Source : Wikipédia (licence CC BY-SA)",
+loy_q:"Combien coûte ce logement par mois ?",loy_m2:"surface",loy_rooms:"pièce(s)",loy_furn:"Meublé",loy_balcony:"Balcon",loy_floor:"Étage {n}",loy_real:"Vrai loyer",loy_yours:"Ton estimation",loy_pts:"+{n} points",loy_end:"Partie terminée ! Score : {n} / {m}",loy_note:"Loyers indicatifs proches des moyennes du marché. Les photos sont de vrais intérieurs de logements de la ville (Wikimedia Commons, licences libres) : elles illustrent l'annonce, ce ne sont pas des photos d'une annonce réelle.",loy_photo:"Photo réelle d'intérieur",
+sem_intro:"Un nouveau mot secret chaque jour. Plus ton mot est proche par le sens, plus il est chaud ! 🔥",sem_ph:"Tape un mot…",sem_found:"🎉 Trouvé en {n} essais !",sem_already:"Déjà proposé !",sem_unknown:"Mot inconnu",sem_next:"💡 Prochaine énigme dans {n} mot(s)",sem_riddle:"Énigme {i}",sem_ai:"🤖 Les mots hors dictionnaire sont notés par Claude.",sem_count:"{n} mot(s) proposé(s)",sem_wait:"…",
+ped_intro:"Un article Wikipédia caché, nouveau chaque jour à minuit. Propose des mots pour les dévoiler et trouve le titre !",ped_ph:"Propose un mot…",ped_found:"🎉 Titre trouvé en {n} essais !",ped_hits:"✅ {w} ×{n}",ped_miss:"❌ {w}",ped_legend:"Tous les mots sont cachés. Les fautes de frappe sont corrigées automatiquement. Un mot proche s'affiche dans les cases : orange foncé = un peu proche, jaune clair = très proche.",
+des_intro:"Le téléphone dessiné sur un seul appareil qu'on se passe : écris, dessine, devine… puis découvrez l'album ensemble !",des_players:"Joueurs",des_rounds:"Nombre de tours",des_name:"Joueur {n}",des_start:"Commencer",des_pass:"Passe l'appareil à",des_ready:"C'est moi, je suis prêt·e !",des_turn:"Tour {k} / {r}",des_write:"Écris une phrase farfelue à faire dessiner",des_draw:"Dessine ceci :",des_describe:"Que représente ce dessin ?",des_random:"🎲 Idée au hasard",des_clear:"Effacer",des_eraser:"Gomme",des_album:"📖 L'album",des_ph:"Ta phrase…",des_wrote:"a écrit",des_drew:"a dessiné",
+wiki_intro:"Course du jour : va du départ à l'objectif en cliquant seulement sur les liens des pages Wikipédia complètes. Remise à zéro à minuit.",wiki_from:"Départ",wiki_to:"Objectif",wiki_clicks:"Clics",wiki_win:"🏁 Arrivé en {n} clics !",wiki_best:"Le chemin le plus court en faisait {m}.",wiki_back:"← Retour",wiki_real:"Jouer sur le vrai Wikipédia ↗",
+mime_intro:"Choisis un extrait, écoute l'original phrase par phrase, puis enregistre ta voix à la place.",mime_persons:"👥 {n} pers.",mime_import:"Importer ton extrait",mime_import_d:"Film, série, mème… ta vidéo + sous-titres .srt (optionnel). Le son peut être coupé ou les voix réduites.",mime_orig:"🔊 Original",mime_rec:"🎙️ Enregistrer",mime_stop:"⏹️ Stop",mime_take:"▶️ Ma prise",mime_line:"Phrase {i} / {n}",mime_playall:"▶️ Scène originale",mime_playdub:"🎬 Mon doublage",mime_back:"← Extraits",mime_mic:"🎙️ Le micro est bloqué sur cette page. Ouvre le fichier G3verse.html téléchargé (ou ton site hébergé) pour enregistrer ta voix.",mime_tts:"La lecture vocale n'est pas disponible sur ce navigateur.",mime_video:"Ta vidéo",mime_srt:"Sous-titres .srt (optionnel)",mime_bg:"Son de l'extrait pendant ton enregistrement",mime_bg_o:"Original",mime_bg_r:"Voix réduites (approx.)",mime_bg_m:"Muet",mime_cut:"✂️ Fin de phrase",mime_cut_h:"Pas de sous-titres ? Lance la vidéo et appuie sur ✂️ à la fin de chaque phrase.",mime_reset:"Réinitialiser le découpage",mime_people:"Nombre de personnes",mime_dub:"🎙️ Doubler",mime_stopall:"⏹️ Arrêter",mime_orig_note:"La version « originale » est lue par la voix de synthèse du navigateur.",
+tai_q:"Glisse la poignée jaune pour donner à l'objet sa vraie taille dans le cadre quadrillé !",tai_ref:"Référence",tai_yours:"Ton estimation",tai_real:"Taille réelle",tai_end:"Terminé ! Score : {n} / {m}",
+aby_intro:"Réponds avec le mot le MOINS cité possible : plus ta réponse est rare, plus ton plongeur descend. 8 manches, puis la descente continue à l'infini.",spa_intro:"Réponds avec le mot le PLUS cité possible : plus ta réponse est courante, plus ta fusée monte. 8 manches, puis la montée continue à l'infini.",qa_ph:"Ta réponse…",qa_unknown:"Réponse non reconnue, essaie un autre mot ({n} essai(s) restant(s)).",qa_zero:"Pas de réponse valable : rien pour cette manche.",qa_rank:"Ta réponse est classée n°{r} sur {n} réponses connues.",qa_ai:"🤖 Réponse évaluée par Claude.",qa_top:"Les plus cités",qa_rare:"Les plus rares",qa_check:"Vérification…",qa_skip:"Passer",aby_total:"Profondeur",spa_total:"Altitude",aby_end:"🤿 Ton plongeur a atteint {n} m !",spa_end:"🚀 Ta fusée a atteint {n} km !",
+qa_nextms:"Prochain cap",qa_endless:"♾️ Continuer (mode infini)",mot_intro:"Choisis la taille du mot et la difficulté. 🟥 bien placée, 🟡 mal placée.",mot_len:"Nombre de lettres",mot_diff:"Difficulté",mot_easy:"Facile",mot_med:"Moyen",mot_hard:"Difficile",mot_easy_d:"Mots courants, 7 essais, 2 lettres données",mot_med_d:"Mots courants, 6 essais, 1re lettre donnée",mot_hard_d:"Mots rares, 6 essais, aucune lettre donnée",mot_change:"⚙️ Changer",mot_win:"🎉 Bravo, trouvé !",mot_lose:"Le mot était : {w}",mot_short:"Il faut {n} lettres"},
+en:{tagline:"Loads of games, one place. Pick one and play!",search:"Search a game…",all:"All",solo:"Solo",party:"With friends",words:"Words",guess:"Guessing",daily:"Daily",play:"Play",menu:"Menu",language:"Translate / Language",games:"Pick another game",home:"Home",inspired:"Inspired by",score:"Score",round:"Round",next:"Next",validate:"Submit",restart:"Play again",tries:"Tries",noresult:"No game found.",month:"month",loading:"Loading…",newIn:"New in",comeback:"Come back tomorrow for no. {n}!",
+contentNote:"This game's content exists in French and English: it is shown in English for your language.",
+offline:"Wikipedia can't be reached from this page: built-in content is used. Open the G3verse.html file (or your hosted site) to play with the real Wikipedia.",source:"Source: Wikipedia (CC BY-SA licence)",
+loy_q:"How much is the monthly rent?",loy_m2:"area",loy_rooms:"room(s)",loy_furn:"Furnished",loy_balcony:"Balcony",loy_floor:"Floor {n}",loy_real:"Real rent",loy_yours:"Your guess",loy_pts:"+{n} points",loy_end:"Game over! Score: {n} / {m}",loy_note:"Indicative rents close to market averages. Photos are real flat interiors from the city (Wikimedia Commons, free licences): they illustrate the listing, they are not from a real ad.",loy_photo:"Real interior photo",
+sem_intro:"A new secret word every day. The closer in meaning your word is, the hotter it gets! 🔥",sem_ph:"Type a word…",sem_found:"🎉 Found in {n} tries!",sem_already:"Already guessed!",sem_unknown:"Unknown word",sem_next:"💡 Next riddle in {n} word(s)",sem_riddle:"Riddle {i}",sem_ai:"🤖 Words outside the dictionary are scored by Claude.",sem_count:"{n} word(s) guessed",sem_wait:"…",
+ped_intro:"A hidden Wikipedia article, new every day at midnight. Guess words to reveal them and find the title!",ped_ph:"Guess a word…",ped_found:"🎉 Title found in {n} tries!",ped_hits:"✅ {w} ×{n}",ped_miss:"❌ {w}",ped_legend:"Every word is hidden. Typos are corrected automatically. Close words appear in the boxes: dark orange = somewhat close, light yellow = very close.",
+des_intro:"The drawing telephone game on one device you pass around: write, draw, guess… then discover the album together!",des_players:"Players",des_rounds:"Number of rounds",des_name:"Player {n}",des_start:"Start",des_pass:"Pass the device to",des_ready:"It's me, I'm ready!",des_turn:"Round {k} / {r}",des_write:"Write a silly sentence to be drawn",des_draw:"Draw this:",des_describe:"What does this drawing show?",des_random:"🎲 Random idea",des_clear:"Clear",des_eraser:"Eraser",des_album:"📖 The album",des_ph:"Your sentence…",des_wrote:"wrote",des_drew:"drew",
+wiki_intro:"Today's race: go from start to target by clicking only links in full Wikipedia pages. Resets at midnight.",wiki_from:"Start",wiki_to:"Target",wiki_clicks:"Clicks",wiki_win:"🏁 Made it in {n} clicks!",wiki_best:"The shortest path was {m}.",wiki_back:"← Back",wiki_real:"Play on the real Wikipedia ↗",
+mime_intro:"Pick a clip, listen to the original line by line, then record your own voice instead.",mime_persons:"👥 {n} people",mime_import:"Import your clip",mime_import_d:"Movie, series, meme… your video + .srt subtitles (optional). Sound can be muted or voices reduced.",mime_orig:"🔊 Original",mime_rec:"🎙️ Record",mime_stop:"⏹️ Stop",mime_take:"▶️ My take",mime_line:"Line {i} / {n}",mime_playall:"▶️ Original scene",mime_playdub:"🎬 My dub",mime_back:"← Clips",mime_mic:"🎙️ The microphone is blocked on this page. Open the downloaded G3verse.html file (or your hosted site) to record your voice.",mime_tts:"Speech playback isn't available in this browser.",mime_video:"Your video",mime_srt:".srt subtitles (optional)",mime_bg:"Clip sound while you record",mime_bg_o:"Original",mime_bg_r:"Reduced voices (approx.)",mime_bg_m:"Muted",mime_cut:"✂️ End of line",mime_cut_h:"No subtitles? Play the video and press ✂️ at the end of each line.",mime_reset:"Reset cuts",mime_people:"Number of people",mime_dub:"🎙️ Dub",mime_stopall:"⏹️ Stop",mime_orig_note:"The 'original' is read by the browser's speech voice.",
+tai_q:"Drag the yellow handle to give the object its real size on the grid!",tai_ref:"Reference",tai_yours:"Your guess",tai_real:"Real size",tai_end:"Done! Score: {n} / {m}",
+aby_intro:"Answer with the LEAST common word you can: the rarer your answer, the deeper your diver goes. 8 rounds, then endless mode.",spa_intro:"Answer with the MOST common word you can: the more common your answer, the higher your rocket flies. 8 rounds, then endless mode.",qa_ph:"Your answer…",qa_unknown:"Answer not recognised, try another word ({n} tries left).",qa_zero:"No valid answer: nothing this round.",qa_rank:"Your answer ranks no. {r} of {n} known answers.",qa_ai:"🤖 Answer rated by Claude.",qa_top:"Most common",qa_rare:"Rarest",qa_check:"Checking…",qa_skip:"Skip",aby_total:"Depth",spa_total:"Altitude",aby_end:"🤿 Your diver reached {n} m!",spa_end:"🚀 Your rocket reached {n} km!",
+qa_nextms:"Next milestone",qa_endless:"♾️ Keep going (endless mode)",mot_intro:"Choose the word length and difficulty. 🟥 right spot, 🟡 wrong spot.",mot_len:"Letters",mot_diff:"Difficulty",mot_easy:"Easy",mot_med:"Medium",mot_hard:"Hard",mot_easy_d:"Common words, 7 tries, 2 letters given",mot_med_d:"Common words, 6 tries, first letter given",mot_hard_d:"Rare words, 6 tries, no letter given",mot_change:"⚙️ Change",mot_win:"🎉 Well done!",mot_lose:"The word was: {w}",mot_short:"{n} letters needed"},
+es:{tagline:"Un montón de juegos en un solo lugar. ¡Elige uno y juega!",search:"Buscar un juego…",all:"Todos",solo:"Solo",party:"Con amigos",words:"Palabras",guess:"Adivinanzas",daily:"Diario",play:"Jugar",menu:"Menú",language:"Traducir / Idioma",games:"Elegir otro juego",home:"Inicio",inspired:"Inspirado en",score:"Puntos",round:"Ronda",next:"Siguiente",validate:"Validar",restart:"Jugar otra vez",tries:"Intentos",noresult:"Ningún juego encontrado.",month:"mes",loading:"Cargando…",newIn:"Nuevo en",comeback:"¡Vuelve mañana para el n.º {n}!",
+contentNote:"El contenido de este juego existe en francés e inglés: se muestra en inglés para tu idioma.",
+offline:"No se puede acceder a Wikipedia desde esta página: se usa contenido integrado. Abre el archivo G3verse.html (o tu sitio alojado) para jugar con la Wikipedia real.",source:"Fuente: Wikipedia (licencia CC BY-SA)",
+loy_q:"¿Cuánto cuesta el alquiler al mes?",loy_m2:"superficie",loy_rooms:"habitación(es)",loy_furn:"Amueblado",loy_balcony:"Balcón",loy_floor:"Planta {n}",loy_real:"Alquiler real",loy_yours:"Tu estimación",loy_pts:"+{n} puntos",loy_end:"¡Fin de la partida! Puntos: {n} / {m}",loy_note:"Alquileres orientativos. La foto muestra el barrio (Wikimedia Commons), no el piso.",loy_photo:"Foto real de interior",
+sem_intro:"Una palabra secreta nueva cada día. ¡Cuanto más cerca el significado, más caliente! 🔥",sem_ph:"Escribe una palabra…",sem_found:"🎉 ¡Encontrada en {n} intentos!",sem_already:"¡Ya propuesta!",sem_unknown:"Palabra desconocida",sem_next:"💡 Próximo acertijo en {n} palabra(s)",sem_riddle:"Acertijo {i}",sem_ai:"🤖 Las palabras fuera del diccionario las puntúa Claude.",sem_count:"{n} palabra(s)",sem_wait:"…",
+ped_intro:"Un artículo de Wikipedia oculto, nuevo cada día a medianoche. ¡Propón palabras y encuentra el título!",ped_ph:"Propón una palabra…",ped_found:"🎉 ¡Título encontrado en {n} intentos!",ped_hits:"✅ {w} ×{n}",ped_miss:"❌ {w}",ped_legend:"Todas las palabras están ocultas. Las erratas se corrigen solas. Las palabras cercanas aparecen en las casillas: naranja oscuro = algo cercana, amarillo claro = muy cercana.",
+des_intro:"El teléfono dibujado en un solo dispositivo que os vais pasando: escribe, dibuja, adivina… ¡y descubrid el álbum juntos!",des_players:"Jugadores",des_rounds:"Número de rondas",des_name:"Jugador {n}",des_start:"Empezar",des_pass:"Pasa el dispositivo a",des_ready:"¡Soy yo, estoy listo!",des_turn:"Ronda {k} / {r}",des_write:"Escribe una frase disparatada para dibujar",des_draw:"Dibuja esto:",des_describe:"¿Qué representa este dibujo?",des_random:"🎲 Idea al azar",des_clear:"Borrar",des_eraser:"Goma",des_album:"📖 El álbum",des_ph:"Tu frase…",des_wrote:"escribió",des_drew:"dibujó",
+wiki_intro:"Carrera del día: ve de la salida al objetivo haciendo clic solo en enlaces de páginas completas de Wikipedia. Se reinicia a medianoche.",wiki_from:"Salida",wiki_to:"Objetivo",wiki_clicks:"Clics",wiki_win:"🏁 ¡Llegaste en {n} clics!",wiki_best:"El camino más corto tenía {m}.",wiki_back:"← Volver",wiki_real:"Jugar en la Wikipedia real ↗",
+mime_intro:"Elige un fragmento, escucha el original frase a frase y graba tu voz en su lugar.",mime_persons:"👥 {n} pers.",mime_import:"Importa tu fragmento",mime_import_d:"Película, serie, meme… tu vídeo + subtítulos .srt (opcional).",mime_orig:"🔊 Original",mime_rec:"🎙️ Grabar",mime_stop:"⏹️ Parar",mime_take:"▶️ Mi toma",mime_line:"Frase {i} / {n}",mime_playall:"▶️ Escena original",mime_playdub:"🎬 Mi doblaje",mime_back:"← Fragmentos",mime_mic:"🎙️ El micrófono está bloqueado en esta página. Abre el archivo G3verse.html descargado (o tu sitio alojado) para grabar tu voz.",mime_tts:"La lectura de voz no está disponible en este navegador.",mime_video:"Tu vídeo",mime_srt:"Subtítulos .srt (opcional)",mime_bg:"Sonido del fragmento mientras grabas",mime_bg_o:"Original",mime_bg_r:"Voces reducidas (aprox.)",mime_bg_m:"Silencio",mime_cut:"✂️ Fin de frase",mime_cut_h:"¿Sin subtítulos? Reproduce el vídeo y pulsa ✂️ al final de cada frase.",mime_reset:"Reiniciar cortes",mime_people:"Número de personas",mime_dub:"🎙️ Doblar",mime_stopall:"⏹️ Parar",mime_orig_note:"El «original» lo lee la voz sintética del navegador.",
+tai_q:"¡Arrastra el tirador amarillo para dar al objeto su tamaño real en la cuadrícula!",tai_ref:"Referencia",tai_yours:"Tu estimación",tai_real:"Tamaño real",tai_end:"¡Terminado! Puntos: {n} / {m}",
+aby_intro:"Responde con la palabra MENOS citada posible: cuanto más rara, más baja tu buzo. 8 rondas.",spa_intro:"Responde con la palabra MÁS citada posible: cuanto más común, más sube tu cohete. 8 rondas.",qa_ph:"Tu respuesta…",qa_unknown:"Respuesta no reconocida, prueba otra ({n} intento(s)).",qa_zero:"Sin respuesta válida: nada en esta ronda.",qa_rank:"Tu respuesta es la n.º {r} de {n} conocidas.",qa_ai:"🤖 Respuesta evaluada por Claude.",qa_top:"Las más citadas",qa_rare:"Las más raras",qa_check:"Comprobando…",qa_skip:"Pasar",aby_total:"Profundidad",spa_total:"Altitud",aby_end:"🤿 ¡Tu buzo llegó a {n} m!",spa_end:"🚀 ¡Tu cohete llegó a {n} km!",
+qa_nextms:"Próxima meta",qa_endless:"♾️ Continuar (modo infinito)",mot_intro:"Elige el tamaño de la palabra y la dificultad. 🟥 bien colocada, 🟡 mal colocada.",mot_len:"Letras",mot_diff:"Dificultad",mot_easy:"Fácil",mot_med:"Medio",mot_hard:"Difícil",mot_easy_d:"Palabras comunes, 7 intentos, 2 letras dadas",mot_med_d:"Palabras comunes, 6 intentos, 1.ª letra dada",mot_hard_d:"Palabras raras, 6 intentos, sin letras",mot_change:"⚙️ Cambiar",mot_win:"🎉 ¡Bravo!",mot_lose:"La palabra era: {w}",mot_short:"Faltan letras ({n})"},
+de:{tagline:"Jede Menge Spiele an einem Ort. Such dir eins aus und spiel!",search:"Spiel suchen…",all:"Alle",solo:"Solo",party:"Mit Freunden",words:"Wörter",guess:"Raten",daily:"Täglich",play:"Spielen",menu:"Menü",language:"Übersetzen / Sprache",games:"Anderes Spiel wählen",home:"Startseite",inspired:"Inspiriert von",score:"Punkte",round:"Runde",next:"Weiter",validate:"Bestätigen",restart:"Nochmal",tries:"Versuche",noresult:"Kein Spiel gefunden.",month:"Monat",loading:"Lädt…",newIn:"Neu in",comeback:"Komm morgen für Nr. {n} wieder!",
+contentNote:"Den Inhalt dieses Spiels gibt es auf Französisch und Englisch: Für deine Sprache wird Englisch angezeigt.",
+offline:"Wikipedia ist von dieser Seite aus nicht erreichbar: Es werden eingebaute Inhalte verwendet. Öffne die Datei G3verse.html (oder deine gehostete Seite), um mit dem echten Wikipedia zu spielen.",source:"Quelle: Wikipedia (Lizenz CC BY-SA)",
+loy_q:"Wie hoch ist die Monatsmiete?",loy_m2:"Fläche",loy_rooms:"Zimmer",loy_furn:"Möbliert",loy_balcony:"Balkon",loy_floor:"Etage {n}",loy_real:"Echte Miete",loy_yours:"Dein Tipp",loy_pts:"+{n} Punkte",loy_end:"Spiel vorbei! Punkte: {n} / {m}",loy_note:"Richtwerte. Das Foto zeigt das Viertel (Wikimedia Commons), nicht die Wohnung.",loy_photo:"Echtes Innenraumfoto",
+sem_intro:"Jeden Tag ein neues geheimes Wort. Je näher die Bedeutung, desto heißer! 🔥",sem_ph:"Wort eingeben…",sem_found:"🎉 Gefunden in {n} Versuchen!",sem_already:"Schon geraten!",sem_unknown:"Unbekanntes Wort",sem_next:"💡 Nächstes Rätsel in {n} Wort/Wörtern",sem_riddle:"Rätsel {i}",sem_ai:"🤖 Wörter außerhalb des Wörterbuchs bewertet Claude.",sem_count:"{n} Wort/Wörter",sem_wait:"…",
+ped_intro:"Ein versteckter Wikipedia-Artikel, jeden Tag um Mitternacht neu. Rate Wörter und finde den Titel!",ped_ph:"Wort raten…",ped_found:"🎉 Titel gefunden in {n} Versuchen!",ped_hits:"✅ {w} ×{n}",ped_miss:"❌ {w}",ped_legend:"Alle Wörter sind versteckt. Tippfehler werden automatisch korrigiert. Ähnliche Wörter erscheinen in den Feldern: dunkelorange = etwas nah, hellgelb = sehr nah.",
+des_intro:"Stille Post mit Zeichnungen auf einem Gerät, das ihr weiterreicht: schreiben, zeichnen, raten… und dann gemeinsam das Album ansehen!",des_players:"Spieler",des_rounds:"Anzahl der Runden",des_name:"Spieler {n}",des_start:"Los geht's",des_pass:"Gib das Gerät an",des_ready:"Ich bin's, bereit!",des_turn:"Runde {k} / {r}",des_write:"Schreib einen verrückten Satz zum Zeichnen",des_draw:"Zeichne das:",des_describe:"Was zeigt diese Zeichnung?",des_random:"🎲 Zufallsidee",des_clear:"Löschen",des_eraser:"Radierer",des_album:"📖 Das Album",des_ph:"Dein Satz…",des_wrote:"schrieb",des_drew:"zeichnete",
+wiki_intro:"Rennen des Tages: vom Start zum Ziel, nur über Links in vollständigen Wikipedia-Seiten. Neustart um Mitternacht.",wiki_from:"Start",wiki_to:"Ziel",wiki_clicks:"Klicks",wiki_win:"🏁 Geschafft in {n} Klicks!",wiki_best:"Der kürzeste Weg hatte {m}.",wiki_back:"← Zurück",wiki_real:"Auf dem echten Wikipedia spielen ↗",
+mime_intro:"Wähle einen Ausschnitt, hör dir das Original Satz für Satz an und nimm dann deine eigene Stimme auf.",mime_persons:"👥 {n} Pers.",mime_import:"Eigenen Ausschnitt laden",mime_import_d:"Film, Serie, Meme… dein Video + .srt-Untertitel (optional).",mime_orig:"🔊 Original",mime_rec:"🎙️ Aufnehmen",mime_stop:"⏹️ Stopp",mime_take:"▶️ Meine Aufnahme",mime_line:"Satz {i} / {n}",mime_playall:"▶️ Originalszene",mime_playdub:"🎬 Meine Synchro",mime_back:"← Ausschnitte",mime_mic:"🎙️ Das Mikrofon ist auf dieser Seite blockiert. Öffne die heruntergeladene Datei G3verse.html (oder deine gehostete Seite), um aufzunehmen.",mime_tts:"Sprachausgabe ist in diesem Browser nicht verfügbar.",mime_video:"Dein Video",mime_srt:".srt-Untertitel (optional)",mime_bg:"Ton des Ausschnitts während der Aufnahme",mime_bg_o:"Original",mime_bg_r:"Stimmen reduziert (ca.)",mime_bg_m:"Stumm",mime_cut:"✂️ Satzende",mime_cut_h:"Keine Untertitel? Starte das Video und drück ✂️ am Ende jedes Satzes.",mime_reset:"Schnitte zurücksetzen",mime_people:"Anzahl Personen",mime_dub:"🎙️ Synchronisieren",mime_stopall:"⏹️ Stopp",mime_orig_note:"Das „Original“ wird von der Sprachausgabe des Browsers gelesen.",
+tai_q:"Zieh den gelben Griff, um dem Objekt seine echte Größe im Raster zu geben!",tai_ref:"Referenz",tai_yours:"Dein Tipp",tai_real:"Echte Größe",tai_end:"Fertig! Punkte: {n} / {m}",
+aby_intro:"Antworte mit dem SELTENSTEN Wort: Je seltener, desto tiefer taucht dein Taucher. 8 Runden.",spa_intro:"Antworte mit dem HÄUFIGSTEN Wort: Je häufiger, desto höher fliegt deine Rakete. 8 Runden.",qa_ph:"Deine Antwort…",qa_unknown:"Antwort nicht erkannt, versuch ein anderes Wort ({n} Versuch(e) übrig).",qa_zero:"Keine gültige Antwort: nichts in dieser Runde.",qa_rank:"Deine Antwort ist Nr. {r} von {n} bekannten.",qa_ai:"🤖 Antwort von Claude bewertet.",qa_top:"Am häufigsten",qa_rare:"Am seltensten",qa_check:"Prüfe…",qa_skip:"Überspringen",aby_total:"Tiefe",spa_total:"Höhe",aby_end:"🤿 Dein Taucher erreichte {n} m!",spa_end:"🚀 Deine Rakete erreichte {n} km!",
+qa_nextms:"Nächstes Ziel",qa_endless:"♾️ Weiter (Endlosmodus)",mot_intro:"Wähle Wortlänge und Schwierigkeit. 🟥 richtig, 🟡 falsche Stelle.",mot_len:"Buchstaben",mot_diff:"Schwierigkeit",mot_easy:"Leicht",mot_med:"Mittel",mot_hard:"Schwer",mot_easy_d:"Häufige Wörter, 7 Versuche, 2 Buchstaben vorgegeben",mot_med_d:"Häufige Wörter, 6 Versuche, 1. Buchstabe vorgegeben",mot_hard_d:"Seltene Wörter, 6 Versuche, kein Buchstabe",mot_change:"⚙️ Ändern",mot_win:"🎉 Super!",mot_lose:"Das Wort war: {w}",mot_short:"{n} Buchstaben nötig"}
+};
+
+const GAMES=[
+{id:'loyer',emoji:'🏠',color:'#ff8a3d',tags:['solo','guess'],insp:'RentGuessr',name:{fr:'Loyer Mystère',en:'Rent Riddle',es:'Alquiler Misterioso',de:'Mieträtsel'},desc:{fr:"Carte, surface, pièces : devine le loyer de logements en France et dans le monde.",en:"Map, area, rooms: guess the rent of flats around the world.",es:"Mapa, superficie, habitaciones: adivina el alquiler.",de:"Karte, Fläche, Zimmer: Errate die Miete."}},
+{id:'semantik',emoji:'🌡️',color:'#ff4d6d',tags:['solo','words','daily'],insp:'Cémantix',name:{fr:'Sémantik',en:'Semantik',es:'Semántik',de:'Semantik'},desc:{fr:"Un mot secret par jour, numéroté. Trouve-le grâce à la proximité de sens.",en:"One numbered secret word a day. Find it by closeness of meaning.",es:"Una palabra secreta al día. Encuéntrala por su significado.",de:"Ein geheimes Wort pro Tag. Finde es über die Bedeutung."}},
+{id:'pedanto',emoji:'📜',color:'#a66cff',tags:['solo','words','daily'],insp:'Pédantix',name:{fr:'Pédanto',en:'Pedanto',es:'Pedanto',de:'Pedanto'},desc:{fr:"Un article Wikipédia caché par jour : dévoile-le mot par mot et trouve son titre.",en:"One hidden Wikipedia article a day: reveal it word by word.",es:"Un artículo de Wikipedia oculto al día.",de:"Ein versteckter Wikipedia-Artikel pro Tag."}},
+{id:'dessin',emoji:'✏️',color:'#2ec4b6',tags:['party'],insp:'Gartic Phone',name:{fr:'Téléphone Dessiné',en:'Doodle Phone',es:'Teléfono Dibujado',de:'Kritzel-Telefon'},desc:{fr:"Écris, dessine, devine : le téléphone arabe en dessins, de 3 à 15 tours.",en:"Write, draw, guess: the telephone game with drawings, 3 to 15 rounds.",es:"Escribe, dibuja, adivina: de 3 a 15 rondas.",de:"Schreiben, zeichnen, raten: 3 bis 15 Runden."}},
+{id:'wiki',emoji:'🔗',color:'#4d96ff',tags:['solo','daily'],insp:'Wiki Race',name:{fr:'Course Wiki',en:'Wiki Sprint',es:'Carrera Wiki',de:'Wiki-Rennen'},desc:{fr:"Une course par jour : relie deux pages Wikipédia de lien en lien.",en:"One race a day: link two Wikipedia pages from link to link.",es:"Una carrera al día entre dos páginas de Wikipedia.",de:"Ein Rennen pro Tag zwischen zwei Wikipedia-Seiten."}},
+{id:'mime',emoji:'🎭',color:'#ffbe0b',tags:['party'],insp:'Try to Act',name:{fr:'Joue la Scène',en:'Act It Out',es:'¡Actúa!',de:'Spiel es vor'},desc:{fr:"Choisis un extrait, écoute l'original phrase par phrase et double-le avec ta voix.",en:"Pick a clip, hear the original line by line and dub it with your voice.",es:"Elige un fragmento y dóblalo con tu voz.",de:"Wähle einen Ausschnitt und synchronisiere ihn mit deiner Stimme."}},
+{id:'taille',emoji:'📏',color:'#3ddc84',tags:['solo','guess'],insp:'Guess the Size',name:{fr:'Quelle Taille ?',en:'How Big?',es:'¿Qué Tamaño?',de:'Wie Groß?'},desc:{fr:"Étire l'objet dans un cadre quadrillé pour retrouver sa vraie taille.",en:"Stretch the object on a grid to find its real size.",es:"Estira el objeto en una cuadrícula hasta su tamaño real.",de:"Zieh das Objekt im Raster auf seine echte Größe."}},
+{id:'abysse',emoji:'🤿',color:'#00b4d8',tags:['solo','words'],insp:null,name:{fr:'Abysse',en:'Abyss',es:'Abismo',de:'Abgrund'},desc:{fr:"Réponds le mot le MOINS cité : plus c'est rare, plus ton plongeur descend.",en:"Give the LEAST common answer: the rarer, the deeper you dive.",es:"Da la respuesta MENOS común: cuanto más rara, más profundo.",de:"Gib die SELTENSTE Antwort: je seltener, desto tiefer."}},
+{id:'space',emoji:'🚀',color:'#7b61ff',tags:['solo','words'],insp:null,name:{fr:'Space',en:'Space',es:'Space',de:'Space'},desc:{fr:"Le contraire d'Abysse : réponds le mot le PLUS cité pour décoller le plus haut.",en:"The opposite of Abyss: give the MOST common answer to fly highest.",es:"Lo contrario de Abismo: da la respuesta MÁS común.",de:"Das Gegenteil von Abgrund: gib die HÄUFIGSTE Antwort."}},
+{id:'motus',emoji:'🟥',color:'#e8484b',tags:['solo','words'],insp:'Sutom / Wordle',name:{fr:'Mot Mystère',en:'Mystery Word',es:'Palabra Misteriosa',de:'Geheimwort'},desc:{fr:"Trouve le mot : de 5 à 8 lettres, 3 niveaux de difficulté.",en:"Find the word: 5 to 8 letters, 3 difficulty levels.",es:"Encuentra la palabra: de 5 a 8 letras, 3 niveles.",de:"Finde das Wort: 5 bis 8 Buchstaben, 3 Stufen."}}
+];
+
+/* ================= OUTILS ================= */
+const $=s=>document.querySelector(s);
+const app=$('#app');
+let keyHandler=null,timers=[],cleanups=[];
+document.addEventListener('keydown',e=>{if(keyHandler)keyHandler(e)});
+function cleanup(){timers.forEach(clearInterval);timers=[];keyHandler=null;cleanups.forEach(f=>{try{f()}catch(e){}});cleanups=[];try{speechSynthesis.cancel()}catch(e){}}
+function t(k,v){let s=(UI[lang]&&UI[lang][k])??UI.en[k]??UI.fr[k]??k;if(v)for(const x in v)s=s.split('{'+x+'}').join(v[x]);return s}
+const L=o=>o[lang]??o.en??o.fr;
+const cl=()=>lang==='fr'?'fr':'en';
+const cnote=()=>(lang==='es'||lang==='de')?`<div class="cnote">🌐 ${t('contentNote')}</div>`:'';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/œ/g,'oe').replace(/æ/g,'ae').trim();
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=n=>new Intl.NumberFormat(lang).format(n);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let x=Math.imul(a^a>>>15,1|a);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296}}
+/* Numéro du jour : 15 novembre 2026 = n°1 */
+function dayNum(){const d=new Date();const u=Date.UTC(d.getFullYear(),d.getMonth(),d.getDate());return Math.max(1,Math.floor((u-Date.UTC(2026,10,15))/864e5)+1)}
+function dailyBar(n){return `<div class="bar daily"><span>📅 <b>n°${n}</b> · ${new Date().toLocaleDateString(lang,{weekday:'long',day:'numeric',month:'long'})}</span><span>⏳ ${t('newIn')} <b class="cd">--:--:--</b></span></div>`}
+function startCountdown(){const day=dayNum();const upd=()=>{const d=new Date(),m=new Date(d);m.setHours(24,0,0,0);const s=Math.max(0,Math.floor((m-d)/1000));const p=x=>String(x).padStart(2,'0');document.querySelectorAll('.cd').forEach(e=>e.textContent=`${p(Math.floor(s/3600))}:${p(Math.floor(s%3600/60))}:${p(s%60)}`);if(dayNum()!==day)route()};upd();timers.push(setInterval(upd,1000))}
+/* Wikipédia (fonctionne depuis le fichier ou un site hébergé ; bloqué dans la page publiée) */
+async function commons(params){const qs=new URLSearchParams({...params,format:'json',formatversion:'2',origin:'*'});const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),8000);try{const r=await fetch(`https://commons.wikimedia.org/w/api.php?${qs}`,{signal:ctl.signal});if(!r.ok)throw new Error('http');return await r.json()}finally{clearTimeout(to)}}
+async function wapi(wl,params){const qs=new URLSearchParams({...params,format:'json',formatversion:'2',origin:'*'});const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),8000);try{const r=await fetch(`https://${wl}.wikipedia.org/w/api.php?${qs}`,{signal:ctl.signal});if(!r.ok)throw new Error('http');const j=await r.json();if(j.error)throw new Error(j.error.info);return j}finally{clearTimeout(to)}}
+/* Claude (capacité « sample » de la page publiée) */
+let SAMPLE=null;
+try{if(window.claude&&typeof window.claude.use==='function')window.claude.use('sample').then(s=>{SAMPLE=s}).catch(()=>{})}catch(e){}
+async function askClaude(prompt){if(!SAMPLE)return null;try{return await SAMPLE.json(prompt,{modelTier:'quick'})}catch(e){if(e&&e.code==='not_granted')SAMPLE=null;return null}}
+/* Micro */
+let micStream=null;
+async function getMic(){if(micStream&&micStream.active)return micStream;micStream=await navigator.mediaDevices.getUserMedia({audio:true});return micStream}
+function startRec(stream){const mr=new MediaRecorder(stream);const ch=[];mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};const done=new Promise(r=>mr.onstop=()=>r(URL.createObjectURL(new Blob(ch,{type:mr.mimeType||'audio/webm'}))));mr.start();return{stop(){if(mr.state!=='inactive')mr.stop()},done}}
+
+
+/* ================= EFFETS (toasts, confettis, ripple, tilt) ================= */
+const fx={
+  toast(m){const c=$('#toasts');if(!c)return;const d=document.createElement('div');d.className='toast';d.innerHTML=m;c.appendChild(d);setTimeout(()=>d.remove(),2900)},
+  shake(el){if(!el)return;el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')},
+  confetti(){const cv=$('#confetti');if(!cv)return;const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const cols=['#ffcf3f','#ff6b9a','#8f7bff','#3ddc84','#4d96ff','#ffffff'];
+    const P=Array.from({length:180},(_,i)=>({x:innerWidth*(i%2?.25:.75),y:innerHeight*.45,vx:(Math.random()-.5)*18+(i%2?4:-4),vy:-Math.random()*16-6,s:5+Math.random()*7,r:Math.random()*6,vr:(Math.random()-.5)*.35,c:cols[i%cols.length]}));
+    let f=0;const step=()=>{ctx.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.vy+=.38;p.vx*=.985;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=Math.max(0,1-f/200);ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore()});if(++f<200)requestAnimationFrame(step);else ctx.clearRect(0,0,cv.width,cv.height)};step()}
+};
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button');if(!b)return;const r=b.getBoundingClientRect();const d=Math.max(r.width,r.height);const sp=document.createElement('span');sp.className='rip';sp.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),650)});
+document.addEventListener('mousemove',e=>{const c=e.target.closest&&e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;c.style.setProperty('--mx',x*100+'%');c.style.setProperty('--my',y*100+'%');c.style.setProperty('--rx',((.5-y)*8).toFixed(2)+'deg');c.style.setProperty('--ry',((x-.5)*10).toFixed(2)+'deg')});
+
+/* ================= MENU ☰ ================= */
+function openDrawer(){renderDrawer();$('#drawer').classList.add('open');$('#scrim').classList.add('show')}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#scrim').classList.remove('show')}
+$('#scrim').onclick=closeDrawer;
+function renderDrawer(){
+  const cur=currentId;const inGame=GAMES.some(g=>g.id===cur);
+  $('#drawer').innerHTML=`<div class="dhead"><b>🎲 G3verse</b><button class="x" id="dclose" aria-label="close">✕</button></div>
+  <div class="dsec"><div class="dlabel">🌐 ${t('language')}</div><div class="langs">${Object.entries(LANGS).map(([k,v],i)=>`<button class="lang ${k===lang?'on':''}" style="--i:${i}" data-lang="${k}">${v.flag} ${v.name}</button>`).join('')}</div></div>
+  <div class="dsec"><div class="dlabel">🎮 ${t('games')}</div>
+  <a class="ditem ${inGame?'':'on'}" href="#home"><span class="dem" style="background:#ffffff14">🏠</span>${t('home')}</a>
+  ${GAMES.map((g,i)=>`<a class="ditem ${g.id===cur?'on':''}" style="--i:${i+5}" href="#${g.id}"><span class="dem" style="background:${g.color}2e">${g.emoji}</span>${esc(L(g.name))}</a>`).join('')}</div>`;
+  $('#dclose').onclick=closeDrawer;
+  $('#drawer').querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store.set('lv-lang',lang);document.documentElement.lang=lang;renderDrawer();route()});
+}
+function shell(inner,g){return `<header class="topbar"><button class="burger" id="burger" aria-label="${t('menu')}"><i></i><i></i><i></i></button><a class="logo" href="#home"><span class="dice">🎲</span><b>G3verse</b></a>${g?`<span class="crumb">/ ${g.emoji} ${esc(L(g.name))}</span>`:''}</header><main>${inner}</main>`}
+function bindShell(){$('#burger').onclick=openDrawer}
+
+/* ================= ROUTEUR ================= */
+let currentId=(location.hash||'').slice(1);
+function go(id){currentId=id;closeDrawer();try{if(location.hash.slice(1)!==id)location.hash=id}catch(e){}route()}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();go(a.getAttribute('href').slice(1))});
+function route(){cleanup();const h=currentId;const g=GAMES.find(x=>x.id===h);document.title=g?L(g.name)+' · G3verse':'G3verse';if(g)renderGame(g);else renderHome();window.scrollTo(0,0)}
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h===currentId)return;currentId=h;closeDrawer();route()});
+
+/* ================= ACCUEIL ================= */
+let filter='all',query='';
+function renderHome(){
+  app.innerHTML=shell(`<section class="hero"><h1>G3verse</h1><p>${t('tagline')}</p><div class="searchrow"><input id="q" placeholder="🔍 ${t('search')}" value="${esc(query)}"><div class="chips">${['all','daily','solo','party','words','guess'].map(f=>`<button class="chip ${f===filter?'on':''}" data-f="${f}">${t(f)}</button>`).join('')}</div></div></section><section class="grid" id="grid"></section>`);
+  bindShell();drawGrid();
+  $('#q').oninput=e=>{query=e.target.value;drawGrid()};
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{filter=c.dataset.f;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===c));drawGrid()});
+}
+function drawGrid(){
+  const q=norm(query);
+  const list=GAMES.filter(g=>(filter==='all'||g.tags.includes(filter))&&(!q||norm(Object.values(g.name).join(' ')+' '+L(g.desc)+' '+(g.insp||'')).includes(q)));
+  $('#grid').innerHTML=list.length?list.map((g,i)=>`<a class="card" href="#${g.id}" style="--c:${g.color};--i:${i}"><div class="cicon">${g.emoji}</div><h3>${esc(L(g.name))}</h3><p>${esc(L(g.desc))}</p><div class="cfoot">${g.tags.map(x=>`<span class="tag ${x==='daily'?'day':''}">${x==='daily'?'📅 ':''}${t(x)}</span>`).join('')}${g.insp?`<span class="insp">${t('inspired')} ${esc(g.insp)}</span>`:''}</div><span class="playbtn">${t('play')} →</span></a>`).join(''):`<p class="muted">${t('noresult')}</p>`;
+}
+
+/* ================= PAGE JEU ================= */
+const GAME_IMPL={};
+function renderGame(g){
+  app.innerHTML=shell(`<div class="gwrap ${g.id==='abysse'||g.id==='space'?'wide':''}"><div class="ghead" style="--c:${g.color}"><div class="gicon">${g.emoji}</div><div><h1>${esc(L(g.name))}</h1><p>${esc(L(g.desc))}${g.insp?` <span class="insp">· ${t('inspired')} ${esc(g.insp)}</span>`:''}</p></div></div><div id="game"></div></div>`,g);
+  bindShell();GAME_IMPL[g.id]($('#game'));
+}
+
+/* =====================================================================
+   1. LOYER MYSTÈRE — carte + photo du quartier + surface + pièces
+   ===================================================================== */
+const RENTS=[
+{c:'Paris 11e',f:'🇫🇷',e:'🏙️',la:48.8590,lo:2.3800,wl:'fr',wk:'11e arrondissement de Paris',m2:25,r:1,fu:1,b:0,fl:4,p:1050},
+{c:'Paris 16e',f:'🇫🇷',e:'🏛️',la:48.8637,lo:2.2769,wl:'fr',wk:'16e arrondissement de Paris',m2:75,r:3,fu:0,b:1,fl:2,p:2700},
+{c:'Lyon 7e',f:'🇫🇷',e:'🌉',la:45.7450,lo:4.8410,wl:'fr',wk:'7e arrondissement de Lyon',m2:45,r:2,fu:0,b:1,fl:3,p:850},
+{c:'Marseille, Vieux-Port',f:'🇫🇷',e:'⛵',la:43.2950,lo:5.3740,wl:'fr',wk:'Vieux-Port de Marseille',m2:65,r:3,fu:0,b:1,fl:5,p:950},
+{c:'Bordeaux, Chartrons',f:'🇫🇷',e:'🍷',la:44.8550,lo:-0.5690,wl:'fr',wk:'Chartrons',m2:40,r:2,fu:1,b:0,fl:1,p:820},
+{c:'Lille, Vieux-Lille',f:'🇫🇷',e:'🧱',la:50.6410,lo:3.0630,wl:'fr',wk:'Vieux-Lille',m2:20,r:1,fu:1,b:0,fl:2,p:560},
+{c:'Toulouse, Capitole',f:'🇫🇷',e:'🚀',la:43.6045,lo:1.4440,wl:'fr',wk:'Toulouse',m2:85,r:4,fu:0,b:1,fl:0,p:1200},
+{c:'Nice, Vieux-Nice',f:'🇫🇷',e:'🌴',la:43.6960,lo:7.2760,wl:'fr',wk:'Vieux-Nice',m2:50,r:2,fu:1,b:1,fl:6,p:1150},
+{c:'Strasbourg, Petite France',f:'🇫🇷',e:'🥨',la:48.5808,lo:7.7409,wl:'fr',wk:'Petite France (Strasbourg)',m2:28,r:1,fu:1,b:0,fl:3,p:620},
+{c:'Clermont-Ferrand',f:'🇫🇷',e:'🌋',la:45.7772,lo:3.0870,wl:'fr',wk:'Clermont-Ferrand',m2:70,r:3,fu:0,b:0,fl:2,p:750},
+{c:'Berlin, Kreuzberg',f:'🇩🇪',e:'🐻',la:52.4986,lo:13.4033,wl:'en',wk:'Kreuzberg',m2:60,r:2,fu:0,b:1,fl:3,p:1350},
+{c:'Madrid, Malasaña',f:'🇪🇸',e:'☀️',la:40.4260,lo:-3.7040,wl:'en',wk:'Malasaña',m2:70,r:3,fu:0,b:1,fl:4,p:1450},
+{c:'Barcelona, Gràcia',f:'🇪🇸',e:'🏖️',la:41.4036,lo:2.1564,wl:'en',wk:'Gràcia',m2:45,r:2,fu:1,b:1,fl:2,p:1250},
+{c:'London, Camden',f:'🇬🇧',e:'🎡',la:51.5390,lo:-0.1426,wl:'en',wk:'Camden Town',m2:50,r:2,fu:1,b:0,fl:1,p:2500},
+{c:'New York, Brooklyn',f:'🇺🇸',e:'🗽',la:40.6782,lo:-73.9442,wl:'en',wk:'Brooklyn',m2:40,r:1,fu:0,b:0,fl:5,p:2900},
+{c:'Tokyo, Shinjuku',f:'🇯🇵',e:'🗼',la:35.6938,lo:139.7034,wl:'en',wk:'Shinjuku',m2:25,r:1,fu:0,b:1,fl:7,p:800},
+{c:'Lisboa, Alfama',f:'🇵🇹',e:'🚋',la:38.7114,lo:-9.1300,wl:'en',wk:'Alfama',m2:55,r:2,fu:1,b:1,fl:3,p:1300},
+{c:'Bruxelles, Ixelles',f:'🇧🇪',e:'🧇',la:50.8333,lo:4.3667,wl:'fr',wk:'Ixelles',m2:65,r:2,fu:0,b:1,fl:2,p:1050}];
+/* Carte : tuiles OpenStreetMap/CARTO ; si elles ne chargent pas, un planisphère quadrillé reste visible dessous */
+function staticMap(host,lat,lon,label){
+  let z=13;draw();
+  function draw(){
+    const W=host.clientWidth||400,H=260,n=2**z;
+    const x=(lon+180)/360*n*256,y=(1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*n*256;
+    const x0=x-W/2,y0=y-H/2;let tiles='';
+    for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++)for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++){if(ty<0||ty>=n)continue;const wx=((tx%n)+n)%n;tiles+=`<img alt="" src="https://${'abcd'[(tx+ty+8)&3]}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${wx}/${ty}.png" style="left:${Math.round(tx*256-x0)}px;top:${Math.round(ty*256-y0)}px" onerror="this.remove()">`}
+    const px=(lon+180)/360*100,py=(90-lat)/180*100;
+    const fb=`<svg class="fb" viewBox="0 0 360 180" preserveAspectRatio="none"><rect width="360" height="180" fill="#9cc3d5"/>${Array.from({length:11},(_,i)=>`<line x1="${i*36}" y1="0" x2="${i*36}" y2="180" stroke="#ffffff55" stroke-width=".5"/>`).join('')}${Array.from({length:7},(_,i)=>`<line x1="0" y1="${i*30}" x2="360" y2="${i*30}" stroke="#ffffff55" stroke-width=".5"/>`).join('')}<circle cx="${px*3.6}" cy="${py*1.8}" r="40" fill="#ffcf3f33"/><circle cx="${px*3.6}" cy="${py*1.8}" r="3" fill="#e63946"/></svg>`;
+    host.innerHTML=`<div class="smap">${fb}${tiles}<div class="pin">📍</div><div class="lbl">📍 ${esc(label)} · ${lat.toFixed(3)}, ${lon.toFixed(3)}</div><div class="zb"><button data-z="1">+</button><button data-z="-1">−</button></div><div class="attr">© OpenStreetMap · © CARTO</div></div>`;
+    host.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{z=Math.min(17,Math.max(3,z+ +b.dataset.z));draw()});
+  }
+}
+function gallery(el,imgs){
+  el.classList.add('gal');el.innerHTML=imgs.map((u,i)=>`<img alt="" src="${esc(u)}" class="${i===0?'on':''}">`).join('')+`<button class="nav p">‹</button><button class="nav n">›</button><div class="dots">${imgs.map((_,i)=>`<i class="${i===0?'on':''}"></i>`).join('')}</div><span class="cap">📷 ${t('loy_photo')} · Wikimedia Commons</span>`;
+  let k=0;const show=j=>{k=(j+imgs.length)%imgs.length;el.querySelectorAll('img').forEach((m,i)=>m.classList.toggle('on',i===k));el.querySelectorAll('.dots i').forEach((m,i)=>m.classList.toggle('on',i===k))};
+  el.querySelector('.p').onclick=()=>show(k-1);el.querySelector('.n').onclick=()=>show(k+1);
+  el.querySelectorAll('img').forEach(m=>m.onerror=()=>m.remove());
+  const iv=setInterval(()=>{if(!el.isConnected)return clearInterval(iv);show(k+1)},4000);timers.push(iv);
+}
+GAME_IMPL.loyer=root=>{
+  const N=5;let rounds=shuffle(RENTS).slice(0,N),i=0,total=0;show();
+  function show(){
+    const h=rounds[i];
+    root.innerHTML=`<div class="bar"><span>${t('round')} ${i+1}/${N}</span><span>${t('score')} : <b>${fmt(total)}</b></span></div>
+    <div class="listing"><div class="lmedia"><div id="map"></div><div class="lphoto" id="ph">${h.e}</div></div>
+    <div class="linfo"><h2>${h.f} ${esc(h.c)}</h2><div class="pills"><span>📐 <b>${h.m2} m²</b></span><span>🚪 <b>${h.r}</b> ${t('loy_rooms')}</span><span>🏢 ${t('loy_floor',{n:h.fl})}</span>${h.fu?`<span>🛋️ ${t('loy_furn')}</span>`:''}${h.b?`<span>🌿 ${t('loy_balcony')}</span>`:''}</div></div></div>
+    <h3 class="q">${t('loy_q')}</h3>
+    <div class="guessbox"><input type="range" id="rg" min="200" max="4000" step="10" value="1200"><div class="numrow"><input type="number" id="rn" value="1200" min="0" max="20000"><b>€ / ${t('month')}</b></div><button class="primary" id="ok">${t('validate')}</button></div><div id="res"></div><p class="note">${t('loy_note')}</p>`;
+    staticMap($('#map'),h.la,h.lo,h.c);
+    const city=h.c.split(',')[0].replace(/\s\d+e$/,'');
+    const imgsFrom=d=>(d&&d.query&&d.query.pages||[]).map(p=>p.imageinfo&&p.imageinfo[0]&&(p.imageinfo[0].thumburl||p.imageinfo[0].url)).filter(u=>u&&/\.(jpe?g|png|webp)/i.test(u));
+    const q=(term)=>commons({action:'query',generator:'search',gsrsearch:term+' filetype:bitmap',gsrnamespace:'6',gsrlimit:'12',prop:'imageinfo',iiprop:'url',iiurlwidth:'960'}).then(imgsFrom);
+    (async()=>{try{let imgs=await q(`${city} apartment interior`);if(imgs.length<3)imgs=imgs.concat(await q(`${city} flat living room`));if(imgs.length<3)imgs=imgs.concat(await q('apartment interior living room'));imgs=[...new Set(imgs)].slice(0,5);if(!imgs.length||!$('#ph'))return;gallery($('#ph'),imgs)}catch(e){}})();
+    const rg=$('#rg'),rn=$('#rn');rg.oninput=()=>rn.value=rg.value;rn.oninput=()=>rg.value=rn.value;
+    rn.onkeydown=e=>{if(e.key==='Enter')$('#ok').click()};
+    $('#ok').onclick=()=>{
+      const g=Math.max(0,+rn.value||0),pts=Math.round(1000*Math.max(0,1-Math.abs(g-h.p)/h.p));total+=pts;
+      rg.disabled=rn.disabled=true;$('#ok').remove();const last=i===N-1;
+      $('#res').innerHTML=`<div class="result fade"><div>${t('loy_yours')} : <b>${fmt(g)} €</b> · ${t('loy_real')} : <b style="color:var(--accent)">${fmt(h.p)} €</b></div><div class="big" style="color:${pts>700?'var(--good)':pts>350?'var(--mid)':'var(--bad)'}">${t('loy_pts',{n:pts})}</div><div class="actions"><button class="primary" id="nx">${t('next')} →</button></div></div>`;
+      if(pts>=800)fx.toast('🎯 +'+pts);
+      $('#nx').onclick=()=>{if(last)end();else{i++;show()}};
+    };
+  }
+  function end(){if(total>=N*600)fx.confetti();root.innerHTML=`<div class="panel center fade"><div style="font-size:3rem">🏆</div><div class="big">${t('loy_end',{n:fmt(total),m:fmt(N*1000)})}</div><div class="actions" style="justify-content:center"><button class="primary" id="re">${t('restart')}</button></div></div>`;$('#re').onclick=()=>{rounds=shuffle(RENTS).slice(0,N);i=0;total=0;show()}}
+};
+
+/* =====================================================================
+   2. SÉMANTIK — 1 mot par jour, numéroté, pas d'abandon, énigme tous les 50 mots
+   Format : mot|voisin score,...|énigme 1|énigme 2|énigme 3
+   ===================================================================== */
+const SEMRAW={fr:[
+"plage|sable 85,mer 82,ocean 75,vague 72,soleil 68,bronzer 68,serviette 62,parasol 66,baignade 66,littoral 70,rivage 74,cote 62,vacances 60,ete 58,maillot 58,coquillage 62,surf 56,dune 60,galet 62,maree 60,crique 72,baie 56,mouette 52,crabe 50,ile 50,station 42|On m'étale une serviette dessus, je suis faite de grains.|Je borde la mer et j'attire les vacanciers l'été.|Châteaux de sable et parasols m'envahissent en juillet.",
+"musique|chanson 82,melodie 84,son 70,rythme 76,instrument 78,guitare 70,piano 70,concert 74,note 68,chanteur 66,orchestre 75,harmonie 74,jazz 64,rock 62,album 62,violon 66,partition 72,compositeur 74,refrain 68,musicien 86,solfege 78,danse 54,radio 50,ecouter 56,melomane 80|Je n'ai pas de corps mais on m'entend partout.|On m'écrit avec des notes sur une portée.|Les oreilles me dégustent, les pieds me suivent.",
+"montagne|sommet 86,mont 90,pic 82,colline 74,altitude 78,neige 64,ski 62,randonnee 70,falaise 56,rocher 60,vallee 70,glacier 68,escalade 66,alpinisme 76,chalet 58,volcan 62,col 66,massif 78,crete 74,versant 72,avalanche 58,alpes 76,everest 72,marmotte 50,pyrenees 72|Plus on me grimpe, plus l'air se fait rare.|J'ai un pied mais pas de jambes, et la tête dans les nuages.|Les skieurs dévalent mes flancs en hiver.",
+"cuisine|recette 84,cuisiner 92,plat 76,chef 78,cuisinier 86,repas 72,four 70,casserole 72,poele 70,ingredient 76,gastronomie 80,restaurant 68,gateau 54,sauce 62,epice 58,assiette 56,couteau 54,saveur 64,gout 60,frigo 52,menu 58,patisserie 66,marmite 66,tablier 60,culinaire 90|Je suis à la fois une pièce de la maison et un art.|On y fait mijoter, rissoler et flamber.|Les chefs étoilés y règnent en maîtres.",
+"hiver|neige 82,froid 84,saison 70,decembre 66,janvier 68,fevrier 64,noel 62,ski 60,glace 66,gel 74,flocon 70,manteau 58,echarpe 58,bonnet 58,givre 72,frimas 70,automne 70,printemps 66,ete 60,cheminee 50,luge 56,verglas 68,grelotter 62,hivernal 92|Je viens après les feuilles mortes.|Les flocons sont mes messagers.|Je commence vers le 21 décembre.",
+"voyage|vacances 76,trajet 80,aventure 66,valise 72,avion 68,train 60,touriste 70,destination 82,passeport 70,billet 64,excursion 78,periple 86,tourisme 80,croisiere 72,itineraire 76,partir 68,explorer 66,etranger 64,bagage 70,hotel 58,expedition 78,voyageur 90,escale 74|Je commence souvent par une valise.|On me raconte au retour, photos à l'appui.|Je peux être organisé ou en sac à dos.",
+"foret|arbre 82,bois 84,chene 70,sapin 66,jungle 72,feuille 60,clairiere 76,sentier 56,champignon 60,cerf 54,loup 50,ecureuil 52,mousse 50,branche 60,bucheron 66,nature 58,sylvestre 74,taillis 72,bosquet 78,futaie 80,amazonie 66,lierre 50,forestier 92|Je suis faite de milliers de troncs.|Le Petit Chaperon rouge m'a traversée.|L'écureuil y a mille maisons.",
+"ecole|classe 82,eleve 84,professeur 80,maitre 70,cours 72,lecon 70,cartable 68,college 80,lycee 80,universite 70,recreation 72,cantine 60,tableau 62,cahier 64,devoir 68,examen 66,apprendre 72,enseignement 80,rentree 66,instituteur 78,diplome 60,scolaire 90,craie 56|On m'y emmène dès trois ans.|J'ai une cour mais pas de roi.|La cloche y sonne la récréation.",
+"cinema|film 86,salle 70,ecran 76,acteur 74,actrice 72,realisateur 78,popcorn 66,seance 72,projection 74,hollywood 72,cannes 64,oscar 66,scenario 70,camera 64,tournage 72,cineaste 88,affiche 56,comedie 60,serie 58,spectateur 64,documentaire 62,studio 62,cinematographique 92|On m'appelle aussi le septième art.|Les frères Lumière m'ont inventé.|On y mange du pop-corn dans le noir.",
+"jardin|fleur 76,potager 84,plante 74,pelouse 72,herbe 66,arrosoir 70,jardinier 88,legume 62,arbre 60,haie 66,parterre 74,verger 76,parc 72,serre 66,graine 62,rose 56,beche 64,rateau 62,tondeuse 66,bassin 54,botanique 72,cultiver 68,semer 64,jardinage 92|On y sème, on y arrose, on y récolte.|Le nain de pierre aime y monter la garde.|Je peux être à la française ou à l'anglaise.",
+"hopital|medecin 82,infirmier 78,clinique 88,urgence 80,patient 76,malade 74,chirurgie 74,soin 70,ambulance 72,docteur 76,operation 70,sante 66,maladie 66,maternite 70,hospitalisation 92,chambre 52,blouse 56,pharmacie 58,radiographie 62,guerison 60,brancard 66,consultation 64,hospitalier 94|On y arrive parfois en ambulance.|Les blouses blanches y travaillent jour et nuit.|C'est là qu'on naît souvent.",
+"chateau|forteresse 84,donjon 80,palais 78,roi 70,reine 68,princesse 64,chevalier 70,tour 62,rempart 78,douves 74,seigneur 72,manoir 76,royaume 66,versailles 70,noble 62,fort 74,citadelle 82,muraille 70,trone 64,fantome 44,chatelain 88,medieval 70|On m'assiège, mais mes douves me protègent.|Le roi y dort et le dragon y rôde.|Versailles en est un célèbre.",
+"pirate|corsaire 90,flibustier 92,boucanier 88,bateau 66,navire 70,tresor 76,capitaine 68,perroquet 66,crochet 64,drapeau 56,mer 58,abordage 80,sabre 66,rhum 60,ile 54,butin 74,pillage 72,equipage 64,galion 72,canon 58,bandeau 62,moussaillon 72,piraterie 94|Je porte souvent un bandeau et un crochet.|Mon drapeau est noir avec une tête de mort.|Je cherche des trésors sur les îles.",
+"robot|machine 80,automate 88,androide 90,intelligence 66,ordinateur 68,mecanique 70,cyborg 82,programme 64,technologie 66,metal 56,usine 60,humanoide 84,circuit 62,automatique 72,electronique 68,futur 56,drone 62,algorithme 60,capteur 64,moteur 54,informatique 62,bionique 74,robotique 95|Je n'ai pas de cœur mais j'ai des circuits.|Isaac Asimov m'a donné trois lois.|On me programme pour obéir.",
+"fromage|camembert 84,brie 80,lait 74,comte 80,emmental 80,roquefort 80,chevre 72,raclette 70,fondue 68,gruyere 82,croute 60,affinage 76,vache 60,fromager 88,laitier 72,yaourt 58,beurre 62,pain 50,vin 52,plateau 60,mozzarella 78,parmesan 80,tomme 80,reblochon 80|Je suis fait de lait et je vieillis en cave.|La France en compte plus de mille variétés.|Je peux être à pâte molle ou à pâte dure.",
+"etoile|astre 88,soleil 80,constellation 78,galaxie 74,ciel 70,planete 70,lune 62,nuit 58,univers 66,cosmos 64,briller 66,filante 72,astronomie 72,telescope 60,lumiere 58,polaire 64,supernova 74,comete 64,nebuleuse 70,scintiller 68,espace 60,star 76,firmament 76,etoile 100|Je scintille la nuit, loin, très loin.|Le Soleil en est une.|On fait un vœu quand je file.",
+"train|locomotive 86,wagon 84,gare 80,rail 82,tgv 84,voyageur 60,quai 70,metro 70,tramway 72,ferroviaire 88,sncf 76,billet 60,controleur 62,voie 66,vapeur 60,conducteur 58,trajet 58,correspondance 60,rame 70,express 64,autorail 82,tunnel 46,cheminot 80|J'ai des wagons mais je ne suis pas une chenille.|Je m'arrête en gare.|Je file sur des rails.",
+"pluie|averse 88,orage 80,nuage 78,goutte 76,parapluie 74,mouille 66,eau 66,meteo 66,pleuvoir 92,bruine 84,crachin 84,deluge 80,tempete 70,flaque 66,gris 52,precipitation 82,humide 68,neige 62,grele 72,automne 50,ondee 86,pluvieux 90|Je tombe du ciel sans me faire mal.|Les parapluies s'ouvrent quand j'arrive.|Je laisse des flaques derrière moi.",
+"cirque|clown 84,chapiteau 88,acrobate 82,jongleur 82,trapeze 80,dompteur 78,lion 60,piste 70,spectacle 74,elephant 54,funambule 82,magicien 66,saltimbanque 84,numero 62,artiste 60,fanfare 58,cerceau 56,ecuyer 70,cabriole 66,forain 76,tente 62,circassien 92|J'ai une piste mais pas d'avions.|Le clown y fait rire les enfants.|Mon chapiteau se monte de ville en ville.",
+"livre|roman 84,lecture 82,lire 80,page 76,auteur 74,ecrivain 72,bibliotheque 80,chapitre 76,histoire 64,bouquin 92,editeur 70,librairie 82,couverture 64,papier 54,recit 72,poeme 58,dictionnaire 70,manuscrit 74,ouvrage 88,texte 66,lecteur 70,conte 66,bd 66,imprimerie 68|J'ai des feuilles mais je ne suis pas un arbre.|On me dévore sans me manger.|J'ai un dos, une couverture et des chapitres."],
+en:[
+"beach|sand 85,sea 82,ocean 78,wave 72,sun 70,tan 66,towel 64,umbrella 60,swim 62,swimming 60,coast 72,shore 80,seaside 88,holiday 60,vacation 60,summer 58,swimsuit 62,seashell 64,shell 58,surf 60,dune 60,bay 58,tide 62,pebble 58,crab 50,seagull 54,sunscreen 60,cove 70,coastline 74,sandcastle 72|You lay a towel on me; I'm made of tiny grains.|I border the sea and draw crowds in summer.|Sandcastles and umbrellas take me over in July.",
+"music|song 82,melody 84,sound 70,rhythm 76,instrument 78,guitar 70,piano 70,concert 74,note 66,singer 68,sing 66,dance 56,orchestra 75,harmony 74,jazz 64,rock 62,album 62,violin 66,composer 74,chorus 66,band 70,tune 80,musician 86,musical 88,playlist 64,radio 50|I have no body, yet you hear me everywhere.|I'm written with notes on a staff.|Ears savour me and feet follow me.",
+"mountain|peak 86,summit 85,hill 76,alps 74,snow 64,ski 62,hiking 68,hike 66,altitude 76,cliff 58,rock 58,valley 70,glacier 68,climbing 66,climb 62,volcano 64,ridge 74,slope 62,avalanche 58,everest 72,range 70,trail 56,mount 90,mountaineering 80,himalaya 72|The higher you climb me, the thinner the air.|I have a foot but no legs, and my head in the clouds.|Skiers race down my sides in winter.",
+"kitchen|cook 82,cooking 84,chef 76,recipe 74,oven 80,stove 82,fridge 78,sink 66,pan 70,pot 68,food 60,meal 62,dinner 56,knife 58,bake 66,baking 66,cupboard 64,counter 66,microwave 76,spoon 56,plate 56,dish 62,apron 66,culinary 80,pantry 74|I'm a room in the house where meals are born.|Things simmer, sizzle and flambé in me.|Fridge, oven and sink live in me.",
+"winter|snow 82,cold 84,season 70,december 66,january 68,february 64,christmas 62,ski 60,ice 66,frost 74,snowflake 70,coat 58,scarf 58,freeze 70,autumn 70,spring 66,summer 60,fireplace 50,sled 56,blizzard 72,wintry 92,chilly 66|I come after the falling leaves.|Snowflakes are my messengers.|I begin around 21 December.",
+"travel|trip 86,journey 88,holiday 76,vacation 76,adventure 66,suitcase 72,plane 68,train 60,tourist 70,destination 82,passport 70,ticket 64,excursion 78,tourism 80,cruise 72,itinerary 76,explore 66,abroad 70,luggage 70,hotel 58,voyage 90,traveller 90,backpack 64|I often start with a suitcase.|People tell stories about me when they come home, with photos.|I can be package or backpacking.",
+"forest|tree 82,wood 84,woods 86,oak 70,pine 66,jungle 72,leaf 60,clearing 76,path 56,mushroom 60,deer 54,wolf 50,squirrel 52,moss 50,branch 60,lumberjack 66,nature 58,grove 78,woodland 92,rainforest 80,timber 64|I'm made of thousands of trunks.|Little Red Riding Hood walked through me.|The squirrel has a thousand homes in me.",
+"school|class 82,pupil 84,student 80,teacher 80,lesson 70,classroom 86,college 74,university 70,playground 70,homework 72,exam 66,learn 72,education 82,headteacher 76,blackboard 64,desk 50,schoolbag 76,canteen 58,diploma 60,academy 78,grade 62|Kids go to me from a young age.|I have a playground but no king.|A bell rings for break time inside me.",
+"cinema|film 86,movie 88,screen 76,actor 74,actress 72,director 78,popcorn 66,screening 74,hollywood 72,cannes 64,oscar 66,script 70,camera 64,filming 72,filmmaker 84,poster 56,comedy 60,audience 64,documentary 62,studio 62,theater 80,theatre 78,cinematic 92|I'm called the seventh art.|The Lumière brothers invented me.|People eat popcorn in my dark rooms.",
+"garden|flower 76,vegetable 62,plant 74,lawn 72,grass 66,gardener 88,tree 60,hedge 66,orchard 76,park 72,greenhouse 66,seed 62,rose 56,shovel 64,rake 62,mower 66,pond 54,botanical 72,grow 68,sow 64,gardening 92,patio 50,flowerbed 80|You sow, water and harvest in me.|The stone gnome likes to guard me.|I can be formal or wild.",
+"hospital|doctor 82,nurse 80,clinic 88,emergency 80,patient 76,sick 72,surgery 74,care 66,ambulance 72,operation 70,health 66,illness 66,maternity 70,ward 74,bed 50,pharmacy 58,xray 62,recovery 60,stretcher 66,surgeon 76,medical 84|Some arrive at me by ambulance.|White coats work in me day and night.|Many people are born in me.",
+"castle|fortress 84,keep 72,palace 78,king 70,queen 68,princess 64,knight 70,tower 62,rampart 78,moat 76,drawbridge 76,lord 70,manor 76,kingdom 66,noble 62,fort 74,citadel 82,wall 56,throne 64,ghost 44,medieval 70,stronghold 86|My moat protects me when I'm besieged.|The king sleeps in me and the dragon prowls nearby.|Windsor is a famous one.",
+"pirate|buccaneer 92,corsair 90,privateer 88,ship 70,boat 66,treasure 76,captain 68,parrot 66,hook 64,flag 56,sea 58,sword 62,rum 60,island 54,loot 74,plunder 74,crew 64,galleon 72,cannon 58,eyepatch 70,piracy 94,cutlass 72|I often wear an eyepatch and a hook.|My flag is black with a skull.|I look for treasure on islands.",
+"robot|machine 80,automaton 88,android 90,intelligence 66,computer 68,mechanical 70,cyborg 82,program 64,technology 66,metal 56,factory 60,humanoid 84,circuit 62,automatic 72,electronic 68,future 56,drone 62,algorithm 60,sensor 64,motor 54,bionic 74,robotics 95,ai 70|I have no heart but I have circuits.|Isaac Asimov gave me three laws.|I'm programmed to obey.",
+"cheese|cheddar 84,brie 80,milk 74,camembert 80,mozzarella 80,parmesan 80,goat 60,fondue 68,gouda 82,rind 66,dairy 76,cow 60,butter 62,bread 50,wine 52,platter 60,stilton 82,feta 80,cheesemaker 88,grated 60,mouse 46|I'm made of milk and I age in a cellar.|Mice are said to love me.|I can be soft or hard, blue or mild.",
+"star|sun 80,constellation 78,galaxy 74,sky 70,planet 70,moon 62,night 58,universe 66,cosmos 64,shine 66,shooting 72,astronomy 72,telescope 60,light 58,polar 64,supernova 74,comet 64,nebula 70,twinkle 68,space 60,celebrity 50,stellar 90|I twinkle at night, far, far away.|The Sun is one of me.|You make a wish when I shoot across the sky.",
+"train|locomotive 86,carriage 84,wagon 80,station 80,rail 82,railway 88,platform 70,subway 70,tram 72,passenger 60,ticket 60,conductor 62,track 66,steam 60,driver 58,journey 58,express 64,tunnel 46,commuter 66,engine 70|I have carriages but I'm not a caterpillar.|I stop at stations.|I race along rails.",
+"rain|shower 88,storm 80,cloud 78,drop 76,raindrop 90,umbrella 74,wet 66,water 66,weather 66,drizzle 84,downpour 86,flood 70,puddle 66,grey 52,precipitation 82,humid 68,snow 62,hail 72,autumn 50,rainy 92,thunder 66|I fall from the sky without getting hurt.|Umbrellas open when I arrive.|I leave puddles behind me.",
+"circus|clown 84,tent 72,big top 88,acrobat 82,juggler 82,trapeze 80,tamer 78,lion 60,ring 70,show 74,elephant 54,tightrope 82,magician 66,performer 64,act 62,artist 60,hoop 56,fair 66,carnival 74,ringmaster 88|I have a ring but no wedding.|The clown makes children laugh in me.|My big top travels from town to town.",
+"book|novel 84,reading 82,read 80,page 76,author 74,writer 72,library 80,chapter 76,story 64,publisher 70,bookshop 82,cover 64,paper 54,tale 66,poem 58,dictionary 70,manuscript 74,text 66,reader 70,comic 62,printing 68,bookcase 70|I have leaves but I'm not a tree.|People devour me without eating me.|I have a spine, a cover and chapters."]};
+function parseSem(s){const p=s.split('|');const w={};p[1].split(',').forEach(x=>{const m=x.trim().match(/^(.*)\s(-?\d+)$/);if(m)w[norm(m[1])]=+m[2]});w[norm(p[0])]=100;return{s:p[0],w,r:p.slice(2)}}
+GAME_IMPL.semantik=root=>{
+  const c=cl(),n=dayNum(),P=parseSem(SEMRAW[c][(n-1)%SEMRAW[c].length]);
+  const key=`lv-sem-${c}-${n}`,aiKey=`lv-semai-${c}-${n}`;
+  const st=store.get(key,{g:[],won:false});const ai=store.get(aiKey,{});let lastW=st.g.length?st.g[st.g.length-1].w:null,busy=false;
+  const hash=s=>{let h=7;for(const ch of s)h=(h*31+ch.charCodeAt(0))>>>0;return h};
+  const emo=s=>s>=100?'🥳':s>=75?'🔥':s>=55?'🥵':s>=35?'😎':s>=15?'🥶':'🧊';
+  const color=s=>s>=75?'#ff3d3d':s>=55?'#ff8a3d':s>=35?'#ffcf3f':s>=15?'#5ec8f0':'#4d6bff';
+  root.innerHTML=`${dailyBar(n)}${cnote()}<p class="intro">${t('sem_intro')}</p><form id="f" class="inrow"><input id="w" placeholder="${t('sem_ph')}" autocomplete="off" autocapitalize="off"><button class="primary">${t('validate')}</button></form><div id="msg" class="msg"></div><div id="hints"></div><div id="list" class="semlist"></div><p class="note" id="ainote"></p>`;
+  startCountdown();
+  const inp=$('#w');
+  function lookup(n0){if(P.w[n0]!=null)return P.w[n0];for(const v of [n0.replace(/[sx]$/,''),n0+'s',n0.replace(/e$/,'')])if(P.w[v]!=null)return P.w[v];return null}
+  async function score(word){
+    const n0=norm(word).replace(/[^a-z0-9\- ]/g,'');if(!n0)return null;
+    const k=lookup(n0);if(k!=null)return{w:n0,s:k};
+    if(ai[n0]!=null)return ai[n0]===false?false:{w:n0,s:ai[n0]};
+    if(SAMPLE){
+      $('#msg').textContent=t('sem_wait');
+      const r=await askClaude(`You score words for a daily semantic guessing game like Cemantix, in ${c==='fr'?'French':'English'}. Secret word: "${P.s}". Guessed word: "${n0}". Reply ONLY with JSON {"valid":boolean,"score":number}. valid=false if "${n0}" is not a real ${c==='fr'?'French':'English'} word. score = semantic closeness to the secret word from -20 to 95: 80-95 near-synonym or very strongly linked, 55-79 strongly related, 30-54 related, 5-29 weakly related, below 5 unrelated. Never 100.`);
+      if(r&&typeof r.score==='number'){if(r.valid===false){ai[n0]=false;store.set(aiKey,ai);return false}const s=Math.max(-20,Math.min(95,Math.round(r.score)));ai[n0]=s;store.set(aiKey,ai);return{w:n0,s}}
+    }
+    return{w:n0,s:(hash(P.s+n0)%30)-14};
+  }
+  function row(g){return `<div class="srow ${g.w===lastW?'last':''}"><span class="n">${g.n}</span><span class="w">${esc(g.w)}</span><span class="tmp">${g.s}°C</span><span>${emo(g.s)}</span><div class="meter"><i style="width:${Math.max(2,g.s)}%;background:${color(g.s)}"></i></div></div>`}
+  function draw(){
+    const last=st.g.find(g=>g.w===lastW);
+    $('#list').innerHTML=(last?row(last)+'<div style="height:8px"></div>':'')+st.g.slice().sort((a,b)=>b.s-a.s).map(row).join('');
+    const unlocked=Math.min(P.r.length,Math.floor(st.g.length/50));
+    $('#hints').innerHTML=P.r.slice(0,unlocked).map((r,i)=>`<div class="riddle">🧩 <b>${t('sem_riddle',{i:i+1})}</b> — ${esc(r)}</div>`).join('')+(!st.won&&unlocked<P.r.length?`<div class="muted" style="margin:6px 0">${t('sem_next',{n:50*(unlocked+1)-st.g.length})} · ${t('sem_count',{n:st.g.length})}</div>`:'');
+    if(st.won){inp.disabled=true;$('#msg').innerHTML=`<span style="color:var(--good)">${t('sem_found',{n:st.g.length})}</span> ${t('comeback',{n:n+1})}`}
+    $('#ainote').textContent=SAMPLE?t('sem_ai'):'';
+  }
+  draw();if(!st.won)inp.focus();
+  $('#f').onsubmit=async e=>{e.preventDefault();if(st.won||busy)return;const v=inp.value.trim().split(/\s+/)[0];inp.value='';if(!v)return;
+    const vn=norm(v);if(st.g.some(g=>g.w===vn)){lastW=vn;$('#msg').textContent=t('sem_already');draw();return}
+    busy=true;const r=await score(v);busy=false;if(!root.isConnected)return;
+    if(r===false){$('#msg').textContent=t('sem_unknown')+' : '+v;fx.shake(inp);return}if(!r)return;
+    if(st.g.some(g=>g.w===r.w)){lastW=r.w;$('#msg').textContent=t('sem_already');draw();return}
+    st.g.push({w:r.w,s:r.s,n:st.g.length+1});lastW=r.w;$('#msg').textContent='';if(r.s>=100){st.won=true;fx.confetti()}else if(r.s>=75)fx.toast('🔥 '+esc(r.w)+' · '+r.s+'°C');store.set(key,st);draw();};
+};
+
+/* =====================================================================
+   3. PÉDANTO — article Wikipédia du jour (intro), contenu intégré en secours
+   ===================================================================== */
+const PTITLES={fr:['Tour Eiffel','Chat','Volcan','Chocolat','Lune','Abeille','Pizza','Baleine bleue','Napoléon Ier','Soleil','Pyramide de Khéops','Jeux olympiques','Wolfgang Amadeus Mozart','Grand requin blanc','Café','Statue de la Liberté','Arc-en-ciel','Titanic (paquebot)','Léonard de Vinci','Football'],
+en:['Eiffel Tower','Cat','Volcano','Chocolate','Moon','Honey bee','Pizza','Blue whale','Napoleon','Sun','Great Pyramid of Giza','Olympic Games','Wolfgang Amadeus Mozart','Great white shark','Coffee','Statue of Liberty','Rainbow','Titanic','Leonardo da Vinci','Association football']};
+const PED={fr:[
+{t:'Tour Eiffel',x:"La Tour Eiffel est une tour de fer puddlé construite à Paris pour l'Exposition universelle de 1889. Conçue par l'entreprise de Gustave Eiffel, elle mesure environ 330 mètres et fut longtemps le plus haut monument du monde. Symbole de la France, elle accueille chaque année des millions de visiteurs venus admirer la vue depuis ses trois étages."},
+{t:'Chat',x:"Le chat est un petit mammifère carnivore de la famille des félidés. Domestiqué depuis des milliers d'années, il vit aujourd'hui aux côtés des humains dans le monde entier. Agile et indépendant, le chat chasse les souris, dort une grande partie de la journée et communique par des miaulements et des ronronnements."},
+{t:'Volcan',x:"Un volcan est une ouverture de la croûte terrestre par laquelle le magma remonte à la surface. Lors d'une éruption, le volcan peut projeter de la lave, des cendres et des gaz. Certains volcans, comme l'Etna en Sicile, sont actifs presque en permanence, tandis que d'autres restent endormis pendant des siècles."},
+{t:'Chocolat',x:"Le chocolat est un aliment fabriqué à partir des fèves du cacaoyer, un arbre originaire d'Amérique centrale. Les Aztèques le buvaient déjà sous forme de boisson amère. Aujourd'hui, on déguste le chocolat en tablettes, en bonbons ou fondu dans des gâteaux, qu'il soit noir, au lait ou blanc."},
+{t:'Lune',x:"La Lune est l'unique satellite naturel de la Terre. Elle tourne autour de notre planète en un peu plus de vingt-sept jours et lui présente toujours la même face. Sa surface, couverte de cratères et de plaines sombres appelées mers, a été foulée pour la première fois par des astronautes en 1969. Son attraction provoque les marées des océans."},
+{t:'Abeille',x:"L'abeille est un insecte volant connu pour produire du miel et de la cire. Elle vit le plus souvent en colonie dans une ruche, organisée autour d'une reine qui pond les œufs. En butinant les fleurs pour récolter le nectar et le pollen, l'abeille joue un rôle essentiel dans la pollinisation des plantes."}],
+en:[
+{t:'Eiffel Tower',x:"The Eiffel Tower is a wrought iron tower built in Paris for the 1889 World's Fair. Designed by the company of Gustave Eiffel, the tower stands about 330 metres tall and was for many years the tallest monument in the world. A symbol of France, it welcomes millions of visitors every year who come to admire the view from its three levels."},
+{t:'Cat',x:"The cat is a small carnivorous mammal of the feline family. Domesticated thousands of years ago, the cat now lives alongside humans all over the world. Agile and independent, it hunts mice, sleeps for much of the day and communicates through meows and purrs."},
+{t:'Volcano',x:"A volcano is an opening in the Earth's crust through which magma rises to the surface. During an eruption, a volcano can throw out lava, ash and gas. Some volcanoes, such as Etna in Sicily, are active almost constantly, while others stay dormant for centuries."},
+{t:'Chocolate',x:"Chocolate is a food made from the beans of the cacao tree, native to Central America. The Aztecs already drank it as a bitter beverage. Today chocolate is enjoyed as bars, sweets or melted into cakes, whether dark, milk or white."},
+{t:'Moon',x:"The Moon is the only natural satellite of the Earth. It orbits our planet in a little over twenty-seven days and always shows it the same face. Its surface, covered with craters and dark plains called seas, was first walked on by astronauts in 1969. Its pull causes the tides of the oceans."},
+{t:'Bee',x:"The bee is a flying insect known for making honey and wax. It usually lives in a colony inside a hive, organised around a queen who lays the eggs. By visiting flowers to collect nectar and pollen, the bee plays an essential role in the pollination of plants."}]};
+const STOP={fr:'le la les l de des du d un une et a à au aux en est son sa ses se qui que qu par pour dans sur il elle ils ne pas ce cette comme y s n on ou'.split(' '),en:'the a an of and is in to it its by for on as with was are from at that this which who s or'.split(' ')};
+function trimExtract(x){const paras=x.split(/\n+/).filter(p=>p.trim().length>40);let out='';for(const p of paras){if(out.length>1300)break;out+=(out?'\n':'')+p.trim()}if(out.length>2200){const cut=out.slice(0,2200);out=cut.slice(0,cut.lastIndexOf('.')+1)||cut}return out}
+GAME_IMPL.pedanto=root=>{
+  const c=cl(),c0=c,n=dayNum(),key=`lv-ped-${c}-${n}`;
+  root.innerHTML=`${dailyBar(n)}${cnote()}<p class="intro">${t('ped_intro')}</p><div id="pb"><p class="muted">${t('loading')}</p></div>`;startCountdown();
+  const title=PTITLES[c][(n-1)%PTITLES[c].length];
+  wapi(c,{action:'query',prop:'extracts',explaintext:'1',exintro:'1',redirects:'1',titles:title}).then(d=>{const p=d.query.pages[0];if(!p||!p.extract)throw new Error('empty');play(p.title.replace(/\s*\(.*\)\s*$/,''),trimExtract(p.extract),true)}).catch(()=>{const F=PED[c][(n-1)%PED[c].length];play(F.t,F.x,false)});
+  function play(T,X,live){
+    if(!root.isConnected)return;
+    const keyOf=w=>{let k=norm(w);if(k.length>3&&/[sx]$/.test(k))k=k.slice(0,-1);return k};
+    const tok=s=>s.split(/([\p{L}\p{N}]+)/u).map((p,i)=>({s:p,w:i%2===1,k:i%2===1?keyOf(p):''}));
+    const TT=tok(T),TX=tok(X),ALL=[...TT,...TX].filter(o=>o.w);
+    const keys=[...new Set(ALL.map(o=>o.k))];
+    let st=store.get(key,null);if(!st||st.v!==2||st.t!==T)st={v:2,t:T,g:[],won:false,near:{}};
+    const rev=new Set(st.g.filter(x=>x.k).map(x=>x.k));let fresh=new Set(),busy=false;
+    const count=k=>ALL.filter(o=>o.k===k).length;
+    const lev=(a,b)=>{const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>{const r=new Array(n+1).fill(0);r[0]=i;return r});for(let j=0;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){const c=a[i-1]===b[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1)}return d[m][n]};
+    const tol=n=>n>=8?2:n>=4?1:0;
+    const dice=(a,b)=>{if(a.length<3||b.length<3)return 0;const bg=x=>{const m=new Map();for(let i=0;i<x.length-1;i++){const y=x.slice(i,i+2);m.set(y,(m.get(y)||0)+1)}return m};const A=bg(a),B=bg(b);let n=0;A.forEach((v,k)=>{n+=Math.min(v,B.get(k)||0)});return 2*n/(a.length+b.length-2)};
+    /* orange foncé (peu proche) -> jaune clair (très proche) */
+    const nearBg=s=>{const u=Math.max(0,Math.min(1,(s-.3)/.65));return `hsl(${18+u*36} ${92-u*6}% ${34+u*50}%)`};
+    $('#pb').innerHTML=`${live?'':`<div class="cnote">📴 ${t('offline')}</div>`}<form id="f" class="inrow"><input id="w" placeholder="${t('ped_ph')}" autocomplete="off" autocapitalize="off"><button class="primary">${t('validate')}</button></form><div id="msg" class="msg"></div><div class="panel"><div class="ptitle" id="pt"></div><div class="ptext" id="px"></div>${live?`<p class="note">${t('source')}</p>`:''}</div><div class="glog" id="log"></div><p class="note">${t('ped_legend')}</p>`;
+    const inp=$('#w');
+    const rend=(arr,all)=>arr.map(o=>{
+      if(!o.w)return esc(o.s).replace(/\n/g,'<br><br>');
+      if(all||rev.has(o.k))return fresh.has(o.k)?`<span class="new">${esc(o.s)}</span>`:esc(o.s);
+      const l=[...o.s].length,w=(l*.6+.25).toFixed(2),nr=st.near[o.k];
+      if(nr)return `<span class="hid near" title="${l}" style="width:${w}em;background:${nearBg(nr.s)};color:${nr.s>.62?'#3b2600':'#fff'}">${esc(nr.g)}</span>`;
+      return `<span class="hid" title="${l}" style="width:${w}em"></span>`}).join('');
+    function draw(){const all=st.won;$('#pt').innerHTML=rend(TT,all);$('#px').innerHTML=rend(TX,all);
+      $('#log').innerHTML=st.g.slice().reverse().map(x=>`<span>${x.c?(x.fix?`✏️ ${esc(x.w)} → <b>${esc(x.fix)}</b> ×${x.c}`:t('ped_hits',{w:esc(x.w),n:x.c})):t('ped_miss',{w:esc(x.w)})}</span>`).join('');
+      if(st.won){inp.disabled=true;$('#msg').innerHTML=`<span style="color:var(--good)">${t('ped_found',{n:st.g.length})}</span> ${t('comeback',{n:n+1})}`}}
+    draw();if(!st.won)inp.focus();
+    $('#f').onsubmit=async e=>{e.preventDefault();if(st.won||busy)return;const v=inp.value.trim().split(/\s+/)[0];inp.value='';if(!v)return;
+      let k=keyOf(v);if(!k)return;
+      if(st.g.some(x=>keyOf(x.w)===k||(x.k&&x.k===k&&rev.has(k)&&x.fix===null&&keyOf(x.w)===k))){$('#msg').textContent='↩︎ '+v;fx.shake(inp);return}
+      let fix=null;
+      if(!keys.includes(k)){const tl=tol(k.length);if(tl){let best=null,bd=99;for(const kk of keys){if(Math.abs(kk.length-k.length)>tl)continue;const d=lev(k,kk);if(d<=tl&&d<bd){bd=d;best=kk}}if(best){k=best;fix=ALL.find(o=>o.k===best).s}}}
+      if(fix&&rev.has(k)){$('#msg').textContent='↩︎ '+fix;return}
+      const c=keys.includes(k)?count(k):0;fresh=new Set();$('#msg').textContent='';
+      if(c){rev.add(k);fresh.add(k);delete st.near[k];st.g.push({w:v,k,c,fix});if(fix)fx.toast(`✏️ « ${esc(v)} » → « ${esc(fix)} »`)}
+      else{
+        st.g.push({w:v,k:null,c:0,fix:null});
+        const hidden=keys.filter(x=>!rev.has(x)&&x.length>=3);const sc={};
+        hidden.forEach(h=>{const d=dice(k,h);if(d>=.5)sc[h]=.3+.45*(d-.5)/.5});
+        if(SAMPLE&&hidden.length){busy=true;$('#msg').textContent='…';
+          const r=await askClaude(`Word game like Pedantix, in ${c0==='fr'?'French':'English'}. The player guessed "${v}". From the list below, pick the words that are semantically close to the guess (synonyms, same word family, strongly associated). Reply ONLY with JSON {"m":{"word":score}} where score is between 0.3 (loosely related) and 0.95 (near synonym). Use the words exactly as written in the list, at most 12 words, and leave out unrelated words. List: ${JSON.stringify(hidden.slice(0,300))}`);
+          busy=false;if(!root.isConnected)return;$('#msg').textContent='';
+          if(r&&r.m&&typeof r.m==='object')for(const[w,x]of Object.entries(r.m)){const kk=keyOf(w);if(hidden.includes(kk)&&typeof x==='number')sc[kk]=Math.max(sc[kk]||0,Math.min(.95,Math.max(.3,x)))}}
+        let any=false;for(const[h,x]of Object.entries(sc))if(!st.near[h]||st.near[h].s<x){st.near[h]={g:v,s:x};any=true}
+        if(!any)fx.shake(inp);
+      }
+      if(TT.every(o=>!o.w||rev.has(o.k))){st.won=true;fx.confetti()}
+      store.set(key,st);draw();};
+  }
+};
+
+/* =====================================================================
+   4. TÉLÉPHONE DESSINÉ — 3 à 15 tours
+   ===================================================================== */
+const IDEAS={fr:["Un pingouin qui fait du ski","Une pizza qui part en vacances","Un dragon qui a peur d'une souris","Mamie qui fait du skate","Un cactus amoureux d'un ballon","Une vache sur la Lune","Un robot qui pleure devant un film","Un escargot pilote de course"],
+en:["A penguin skiing","A pizza going on holiday","A dragon scared of a mouse","Grandma skateboarding","A cactus in love with a balloon","A cow on the Moon","A robot crying at a movie","A snail racing driver"],
+es:["Un pingüino esquiando","Una pizza de vacaciones","Un dragón con miedo a un ratón","La abuela en monopatín","Un cactus enamorado de un globo","Una vaca en la Luna","Un robot llorando con una película","Un caracol piloto de carreras"],
+de:["Ein Pinguin beim Skifahren","Eine Pizza im Urlaub","Ein Drache, der Angst vor einer Maus hat","Oma auf dem Skateboard","Ein Kaktus, verliebt in einen Luftballon","Eine Kuh auf dem Mond","Ein Roboter, der bei einem Film weint","Eine Schnecke als Rennfahrer"]};
+function makeCanvas(host){
+  const COLORS=['#1a1a1a','#e63946','#ff8a3d','#ffcf3f','#3ddc84','#4d96ff','#a66cff','#8b5a2b','#ff8fc7'];
+  host.innerHTML=`<div class="tools">${COLORS.map((c,i)=>`<button class="sw ${i===0?'on':''}" data-c="${c}" style="background:${c}"></button>`).join('')}<span class="sep"></span>${[4,10,22].map((s,i)=>`<button class="sz ${i===1?'on':''}" data-s="${s}"><i style="width:${s/2+4}px;height:${s/2+4}px"></i></button>`).join('')}<button class="er">🧽 ${t('des_eraser')}</button><button class="clr">🗑️ ${t('des_clear')}</button></div><canvas width="1000" height="700" class="cv"></canvas>`;
+  const cv=host.querySelector('canvas'),ctx=cv.getContext('2d');
+  const blank=()=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height)};blank();ctx.lineCap='round';ctx.lineJoin='round';
+  let col=COLORS[0],size=10,erase=false,drawing=false,last=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  const w=()=>size*(erase?2.5:1)*1.25;
+  cv.addEventListener('pointerdown',e=>{drawing=true;cv.setPointerCapture(e.pointerId);last=pos(e);ctx.fillStyle=erase?'#fff':col;ctx.beginPath();ctx.arc(last[0],last[1],w()/2,0,7);ctx.fill()});
+  cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=pos(e);ctx.strokeStyle=erase?'#fff':col;ctx.lineWidth=w();ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();last=p});
+  ['pointerup','pointercancel'].forEach(ev=>cv.addEventListener(ev,()=>drawing=false));
+  host.querySelectorAll('.sw').forEach(b=>b.onclick=()=>{col=b.dataset.c;erase=false;host.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===b));host.querySelector('.er').classList.remove('on')});
+  host.querySelectorAll('.sz').forEach(b=>b.onclick=()=>{size=+b.dataset.s;host.querySelectorAll('.sz').forEach(x=>x.classList.toggle('on',x===b))});
+  host.querySelector('.er').onclick=e=>{erase=!erase;e.currentTarget.classList.toggle('on',erase)};
+  host.querySelector('.clr').onclick=blank;
+  return()=>cv.toDataURL('image/jpeg',.8);
+}
+GAME_IMPL.dessin=root=>{
+  let n=4,R=6,names=[],chain=[];setup();
+  function setup(){
+    root.innerHTML=`<p class="intro">${t('des_intro')}</p><div class="panel"><div class="stepper"><b style="min-width:150px">${t('des_players')}</b><button id="m">−</button><span class="big" id="cnt">${n}</span><button id="p">+</button></div><div class="stepper"><b style="min-width:150px">${t('des_rounds')}</b><button id="rm">−</button><span class="big" id="rc">${R}</span><button id="rp">+</button><span class="muted">(3 – 15)</span></div><div class="names" id="nm"></div><button class="primary" id="go">${t('des_start')} →</button></div>`;
+    const drawNames=()=>{$('#cnt').textContent=n;$('#rc').textContent=R;$('#nm').innerHTML=Array.from({length:n},(_,i)=>`<input data-i="${i}" placeholder="${t('des_name',{n:i+1})}" value="${esc(names[i]||'')}">`).join('');$('#nm').querySelectorAll('input').forEach(x=>x.oninput=()=>names[+x.dataset.i]=x.value)};
+    drawNames();$('#m').onclick=()=>{if(n>2){n--;drawNames()}};$('#p').onclick=()=>{if(n<12){n++;drawNames()}};
+    $('#rm').onclick=()=>{if(R>3){R--;drawNames()}};$('#rp').onclick=()=>{if(R<15){R++;drawNames()}};
+    $('#go').onclick=()=>{chain=[];pass(0)};
+  }
+  const nm=i=>(names[i%n]||'').trim()||t('des_name',{n:i%n+1});
+  function pass(k){root.innerHTML=`<div class="panel passbox fade"><div class="muted">${t('des_turn',{k:k+1,r:R})}</div><div class="muted" style="margin-top:10px">${t('des_pass')}</div><div class="who">${esc(nm(k))}</div><button class="primary" id="rd">${t('des_ready')}</button></div>`;$('#rd').onclick=()=>play(k)}
+  function next(k){if(k+1<R)pass(k+1);else album()}
+  function play(k){
+    const prev=chain[k-1];
+    if(k%2===0){
+      root.innerHTML=`<div class="fade"><div class="muted">${t('des_turn',{k:k+1,r:R})}</div>${k===0?`<h3 class="q">${t('des_write')}</h3>`:`<h3 class="q">${t('des_describe')}</h3><img src="${prev.v}" style="width:100%;border-radius:14px;margin-bottom:12px">`}<form id="f" class="inrow"><input id="w" placeholder="${t('des_ph')}" maxlength="120" autocomplete="off"><button class="primary">${t('validate')}</button></form>${k===0?`<div class="actions"><button id="rn">${t('des_random')}</button></div>`:''}</div>`;
+      $('#w').focus();if(k===0)$('#rn').onclick=()=>$('#w').value=rnd(IDEAS[lang]);
+      $('#f').onsubmit=e=>{e.preventDefault();const v=$('#w').value.trim();if(!v)return;chain.push({type:'text',by:k,v});next(k)};
+    }else{
+      root.innerHTML=`<div class="fade"><div class="muted">${t('des_turn',{k:k+1,r:R})} · ${t('des_draw')}</div><div class="prompt">« ${esc(prev.v)} »</div><div id="cvh"></div><div class="actions"><button class="primary" id="ok">${t('validate')} →</button></div></div>`;
+      const get=makeCanvas($('#cvh'));$('#ok').onclick=()=>{chain.push({type:'draw',by:k,v:get()});next(k)};
+    }
+  }
+  function album(){
+    root.innerHTML=`<h2 style="margin-bottom:12px">${t('des_album')}</h2><div class="album" id="al"></div><div class="actions"><button class="primary" id="nx">${t('next')} →</button><button id="re" style="display:none">🔄 ${t('restart')}</button></div>`;
+    let i=0;const show=()=>{const c=chain[i];const d=document.createElement('div');d.className='aitem fade';d.innerHTML=`<div class="by"><b>${esc(nm(c.by))}</b> ${c.type==='text'?t('des_wrote'):t('des_drew')} :</div>${c.type==='text'?`<div class="txt">« ${esc(c.v)} »</div>`:`<img src="${c.v}">`}`;$('#al').appendChild(d);d.scrollIntoView({behavior:'smooth',block:'center'});i++;if(i>=chain.length){$('#nx').style.display='none';$('#re').style.display=''}};
+    show();fx.confetti();$('#nx').onclick=show;$('#re').onclick=setup;
+  }
+};
+
+/* =====================================================================
+   5. COURSE WIKI — course du jour sur pages Wikipédia complètes
+   ===================================================================== */
+const WPAIRS={fr:[['Pizza','Lune'],['Chat','Révolution française'],['Football','Wolfgang Amadeus Mozart'],['Tour Eiffel','Dinosauria'],['Chocolat','Japon'],['Volcan','Napoléon Ier'],['Café','Mars (planète)'],['Baleine bleue','Paris'],['Abeille','Seconde Guerre mondiale'],['Lego','Égypte antique'],['Harry Potter','Océan Atlantique'],['Fromage','Albert Einstein'],['Ski','Brésil'],['Guitare','Soleil'],['Banane','Empire romain']],
+en:[['Pizza','Moon'],['Cat','French Revolution'],['Association football','Wolfgang Amadeus Mozart'],['Eiffel Tower','Dinosaur'],['Chocolate','Japan'],['Volcano','Napoleon'],['Coffee','Mars'],['Blue whale','Paris'],['Honey bee','World War II'],['Lego','Ancient Egypt'],['Harry Potter','Atlantic Ocean'],['Cheese','Albert Einstein'],['Skiing','Brazil'],['Guitar','Sun'],['Banana','Roman Empire']]};
+const WIKI={
+paris:{e:'🗼',t:{fr:'Paris',en:'Paris'},x:{fr:"Paris est la capitale de la [[france|France]]. Ses monuments les plus célèbres sont la [[tour_eiffel|tour Eiffel]] et le Louvre. Ses terrasses sont réputées pour leur [[cafe|café]] et ses rues pour leurs [[musique|musiciens]].",en:"Paris is the capital of [[france|France]]. Its most famous landmarks are the [[tour_eiffel|Eiffel Tower]] and the Louvre. Its terraces are known for their [[cafe|coffee]] and its streets for their [[musique|musicians]]."}},
+france:{e:'🇫🇷',t:{fr:'France',en:'France'},x:{fr:"La France est un pays d'[[europe|Europe]] de l'Ouest dont la capitale est [[paris|Paris]]. Bordée par l'[[ocean|océan]] Atlantique, elle a remporté deux fois la Coupe du monde de [[football|football]].",en:"France is a country in Western [[europe|Europe]] whose capital is [[paris|Paris]]. Bordered by the Atlantic [[ocean|Ocean]], it has won the [[football|football]] World Cup twice."}},
+europe:{e:'🌍',t:{fr:'Europe',en:'Europe'},x:{fr:"L'Europe est un continent de la [[terre|Terre]]. Elle compte de nombreux pays comme la [[france|France]], l'[[italie|Italie]] ou l'[[autriche|Autriche]].",en:"Europe is a continent of the [[terre|Earth]]. It has many countries such as [[france|France]], [[italie|Italy]] and [[autriche|Austria]]."}},
+tour_eiffel:{e:'🗼',t:{fr:'Tour Eiffel',en:'Eiffel Tower'},x:{fr:"La tour Eiffel est un monument de [[paris|Paris]] construit en 1889. Elle est faite de plus de 7 000 tonnes de [[fer|fer]].",en:"The Eiffel Tower is a landmark in [[paris|Paris]] built in 1889. It is made of more than 7,000 tonnes of [[fer|iron]]."}},
+fer:{e:'⚙️',t:{fr:'Fer',en:'Iron'},x:{fr:"Le fer est un métal très abondant sur [[terre|Terre]]. Au contact de l'[[eau|eau]], il rouille. On l'a utilisé pour bâtir la [[tour_eiffel|tour Eiffel]].",en:"Iron is a very common metal on [[terre|Earth]]. In contact with [[eau|water]], it rusts. It was used to build the [[tour_eiffel|Eiffel Tower]]."}},
+terre:{e:'🌎',t:{fr:'Terre',en:'Earth'},x:{fr:"La Terre est la troisième planète du système solaire. Elle tourne autour du [[soleil|Soleil]] et possède un satellite, la [[lune|Lune]]. Elle est couverte d'[[ocean|océans]] et de [[plante|plantes]].",en:"Earth is the third planet of the solar system. It orbits the [[soleil|Sun]] and has one satellite, the [[lune|Moon]]. It is covered with [[ocean|oceans]] and [[plante|plants]]."}},
+soleil:{e:'☀️',t:{fr:'Soleil',en:'Sun'},x:{fr:"Le Soleil est l'étoile au centre de notre système solaire. Il éclaire la [[terre|Terre]] et la [[lune|Lune]] et permet aux [[plante|plantes]] de pousser.",en:"The Sun is the star at the centre of our solar system. It lights up the [[terre|Earth]] and the [[lune|Moon]] and lets [[plante|plants]] grow."}},
+lune:{e:'🌙',t:{fr:'Lune',en:'Moon'},x:{fr:"La Lune est le satellite naturel de la [[terre|Terre]]. Elle reflète la lumière du [[soleil|Soleil]] et provoque les marées de l'[[ocean|océan]].",en:"The Moon is the natural satellite of the [[terre|Earth]]. It reflects the light of the [[soleil|Sun]] and causes the tides of the [[ocean|ocean]]."}},
+ocean:{e:'🌊',t:{fr:'Océan',en:'Ocean'},x:{fr:"Un océan est une immense étendue d'[[eau|eau]] salée qui couvre la majorité de la [[terre|Terre]]. Il abrite des milliers d'espèces de [[poisson|poissons]] et longe les côtes du [[bresil|Brésil]].",en:"An ocean is a huge body of salt [[eau|water]] covering most of the [[terre|Earth]]. It is home to thousands of species of [[poisson|fish]] and runs along the coast of [[bresil|Brazil]]."}},
+poisson:{e:'🐟',t:{fr:'Poisson',en:'Fish'},x:{fr:"Les poissons sont des animaux qui vivent dans l'[[eau|eau]], des rivières jusqu'à l'[[ocean|océan]]. Le [[chat|chat]] en raffole.",en:"Fish are animals that live in [[eau|water]], from rivers to the [[ocean|ocean]]. The [[chat|cat]] loves them."}},
+chat:{e:'🐈',t:{fr:'Chat',en:'Cat'},x:{fr:"Le chat est un petit [[mammifere|mammifère]] domestique. Il adore chasser et raffole du [[poisson|poisson]]. Dans la [[rome|Rome]] antique, on l'appréciait pour chasser les souris.",en:"The cat is a small domestic [[mammifere|mammal]]. It loves hunting and adores [[poisson|fish]]. In ancient [[rome|Rome]], it was valued for catching mice."}},
+mammifere:{e:'🐋',t:{fr:'Mammifère',en:'Mammal'},x:{fr:"Les mammifères sont des animaux qui allaitent leurs petits. Le [[chat|chat]] en est un, tout comme la baleine qui vit dans l'[[ocean|océan]]. On en trouve sur toute la [[terre|Terre]].",en:"Mammals are animals that feed their young with milk. The [[chat|cat]] is one, and so is the whale living in the [[ocean|ocean]]. They are found all over the [[terre|Earth]]."}},
+eau:{e:'💧',t:{fr:'Eau',en:'Water'},x:{fr:"L'eau est indispensable à la vie. Elle remplit l'[[ocean|océan]], nourrit les [[plante|plantes]] et sert à préparer le [[cafe|café]].",en:"Water is essential to life. It fills the [[ocean|ocean]], feeds [[plante|plants]] and is used to make [[cafe|coffee]]."}},
+plante:{e:'🌱',t:{fr:'Plante',en:'Plant'},x:{fr:"Les plantes fabriquent leur nourriture grâce à la lumière du [[soleil|Soleil]] et à l'[[eau|eau]]. La forêt d'[[amazonie|Amazonie]] en abrite des milliers d'espèces, dont le caféier qui donne le [[cafe|café]].",en:"Plants make their food using light from the [[soleil|Sun]] and [[eau|water]]. The [[amazonie|Amazon]] rainforest is home to thousands of species, including the plant that gives us [[cafe|coffee]]."}},
+pizza:{e:'🍕',t:{fr:'Pizza',en:'Pizza'},x:{fr:"La pizza est un plat originaire de Naples, en [[italie|Italie]]. On la garnit de tomate, une [[plante|plante]] venue d'Amérique.",en:"Pizza is a dish from Naples, in [[italie|Italy]]. It is topped with tomato, a [[plante|plant]] that came from the Americas."}},
+italie:{e:'🇮🇹',t:{fr:'Italie',en:'Italy'},x:{fr:"L'Italie est un pays d'[[europe|Europe]] du Sud dont la capitale est [[rome|Rome]]. Elle est célèbre pour la [[pizza|pizza]] et sa passion pour le [[football|football]].",en:"Italy is a country in Southern [[europe|Europe]] whose capital is [[rome|Rome]]. It is famous for [[pizza|pizza]] and its passion for [[football|football]]."}},
+rome:{e:'🏛️',t:{fr:'Rome',en:'Rome'},x:{fr:"Rome est la capitale de l'[[italie|Italie]]. Elle fut le cœur d'un empire qui domina une grande partie de l'[[europe|Europe]].",en:"Rome is the capital of [[italie|Italy]]. It was the heart of an empire that ruled much of [[europe|Europe]]."}},
+musique:{e:'🎵',t:{fr:'Musique',en:'Music'},x:{fr:"La musique est l'art d'organiser les sons. De grands compositeurs comme [[mozart|Mozart]] l'ont marquée, et la samba du [[bresil|Brésil]] fait danser le monde. [[paris|Paris]] accueille de nombreux concerts.",en:"Music is the art of arranging sounds. Great composers like [[mozart|Mozart]] shaped it, and samba from [[bresil|Brazil]] makes the world dance. [[paris|Paris]] hosts many concerts."}},
+mozart:{e:'🎹',t:{fr:'Mozart',en:'Mozart'},x:{fr:"Mozart est un compositeur né à Salzbourg, en [[autriche|Autriche]], en 1756. Il a écrit plus de 600 œuvres de [[musique|musique]].",en:"Mozart was a composer born in Salzburg, [[autriche|Austria]], in 1756. He wrote more than 600 pieces of [[musique|music]]."}},
+autriche:{e:'🇦🇹',t:{fr:'Autriche',en:'Austria'},x:{fr:"L'Autriche est un pays d'[[europe|Europe]] centrale, connu pour ses montagnes et pour [[mozart|Mozart]].",en:"Austria is a country in Central [[europe|Europe]], known for its mountains and for [[mozart|Mozart]]."}},
+football:{e:'⚽',t:{fr:'Football',en:'Football'},x:{fr:"Le football est le sport le plus populaire au monde. Le [[bresil|Brésil]] a gagné cinq Coupes du monde, et la [[france|France]] comme l'[[italie|Italie]] en comptent aussi plusieurs.",en:"Football is the most popular sport in the world. [[bresil|Brazil]] has won five World Cups, and [[france|France]] and [[italie|Italy]] have also won several."}},
+bresil:{e:'🇧🇷',t:{fr:'Brésil',en:'Brazil'},x:{fr:"Le Brésil est le plus grand pays d'Amérique du Sud. Il abrite une grande partie de l'[[amazonie|Amazonie]], adore le [[football|football]] et la [[musique|musique]], produit beaucoup de [[cafe|café]] et borde l'[[ocean|océan]] Atlantique.",en:"Brazil is the largest country in South America. It holds much of the [[amazonie|Amazon]], loves [[football|football]] and [[musique|music]], produces lots of [[cafe|coffee]] and borders the Atlantic [[ocean|Ocean]]."}},
+amazonie:{e:'🌳',t:{fr:'Amazonie',en:'Amazon rainforest'},x:{fr:"L'Amazonie est la plus grande forêt tropicale du monde, située en grande partie au [[bresil|Brésil]]. Ses [[plante|plantes]] et ses rivières pleines de [[poisson|poissons]] en font un trésor de biodiversité.",en:"The Amazon is the largest rainforest in the world, mostly in [[bresil|Brazil]]. Its [[plante|plants]] and rivers full of [[poisson|fish]] make it a treasure of biodiversity."}},
+cafe:{e:'☕',t:{fr:'Café',en:'Coffee'},x:{fr:"Le café est une boisson préparée avec de l'[[eau|eau]] et les graines d'une [[plante|plante]], le caféier. Le [[bresil|Brésil]] en est le premier producteur, et les cafés de [[paris|Paris]] sont célèbres.",en:"Coffee is a drink made with [[eau|water]] and the seeds of a [[plante|plant]], the coffee tree. [[bresil|Brazil]] is the top producer, and the cafés of [[paris|Paris]] are famous."}}};
+const NS=/^(Fichier|Catégorie|Aide|Portail|Modèle|Wikipédia|Spécial|Discussion|Projet|Utilisateur|Référence|File|Category|Help|Portal|Template|Wikipedia|Special|Talk|User|Module|Draft|MediaWiki|Image)(\s|_)?:/i;
+function cleanWikiHtml(html){
+  const doc=new DOMParser().parseFromString(`<div id="r">${html}</div>`,'text/html');const r=doc.getElementById('r');
+  r.querySelectorAll('script,style,link,meta,.mw-editsection,sup.reference,.reference,.mw-references-wrap,.references,.reflist,.navbox,.navbox-styles,.metadata,.noprint,.mw-empty-elt,.bandeau-portail,.homonymie,.ambox,.mbox-small,#toc,.toc,.printfooter,.catlinks').forEach(e=>e.remove());
+  r.querySelectorAll('img').forEach(i=>{const s=i.getAttribute('src');if(s&&s.startsWith('//'))i.setAttribute('src','https:'+s);const ss=i.getAttribute('srcset');if(ss)i.setAttribute('srcset',ss.replace(/(^|\s)\/\//g,'$1https://'));i.setAttribute('loading','lazy')});
+  r.querySelectorAll('a').forEach(a=>{const h=a.getAttribute('href')||'';const m=h.match(/^(?:\.\/|\/wiki\/)([^#?]+)/);if(m){const ti=decodeURIComponent(m[1]).replace(/_/g,' ');if(!NS.test(ti)){const s=doc.createElement('a');s.className='wl';s.dataset.t=ti;s.innerHTML=a.innerHTML;a.replaceWith(s);return}}const sp=doc.createElement('span');sp.innerHTML=a.innerHTML;a.replaceWith(sp)});
+  return r.innerHTML;
+}
+GAME_IMPL.wiki=root=>{
+  const c=cl(),n=dayNum(),key=`lv-wiki-${c}-${n}`;const pair=WPAIRS[c][(n-1)%WPAIRS[c].length];
+  root.innerHTML=`${dailyBar(n)}${cnote()}<p class="intro">${t('wiki_intro')}</p><div id="wb"><p class="muted">${t('loading')}</p></div>`;startCountdown();
+  wapi(c,{action:'query',titles:pair[1],redirects:'1'}).then(d=>live(pair[0],d.query.pages[0].title)).catch(()=>fallback());
+  function live(start,target){
+    const st=store.get(key,{path:[start],clicks:0,won:false,mode:'live'});if(st.mode!=='live'){st.path=[start];st.clicks=0;st.won=false;st.mode='live'}
+    const realUrl=`https://${c}.wikipedia.org/wiki/${encodeURIComponent(start.replace(/ /g,'_'))}`;
+    async function load(title){
+      $('#wb').innerHTML=bar()+`<div class="article"><p>${t('loading')}</p></div>`;
+      try{const d=await wapi(c,{action:'parse',page:title,prop:'text',redirects:'1',disableeditsection:'1',disabletoc:'1'});if(!root.isConnected)return;
+        const T=d.parse.title;st.path[st.path.length-1]=T;if(norm(T)===norm(target)&&!st.won){st.won=true;fx.confetti()}store.set(key,st);
+        $('#wb').innerHTML=bar()+(st.won?winBox():'')+`<div class="article fade"><h2 class="at">${esc(T)}</h2><div class="wikibody">${cleanWikiHtml(d.parse.text)}</div><p class="note" style="color:#555">${t('source')}</p></div>`;
+        $('#wb').querySelectorAll('.wl').forEach(a=>{if(norm(a.dataset.t)===norm(target))a.classList.add('target');a.onclick=()=>{if(st.won)return;st.path.push(a.dataset.t);st.clicks++;load(a.dataset.t);window.scrollTo({top:root.offsetTop-80,behavior:'smooth'})}});
+        bindBar();
+      }catch(e){if(root.isConnected)fallback()}
+    }
+    const bar=()=>`<div class="bar wsticky"><span class="wroute">${t('wiki_from')} <b>${esc(start)}</b> → ${t('wiki_to')} <b>🎯 ${esc(target)}</b></span><span>${t('wiki_clicks')} : <b>${st.clicks}</b> <button id="bk" style="padding:4px 10px;margin-left:6px" ${st.path.length<2||st.won?'disabled':''}>${t('wiki_back')}</button></span></div><div class="wpath">${st.path.map(esc).join(' → ')}</div>`;
+    const winBox=()=>`<div class="result fade center" style="margin-bottom:14px"><div class="big" style="color:var(--good)">${t('wiki_win',{n:st.clicks})}</div><div>${t('comeback',{n:n+1})}</div></div>`;
+    function bindBar(){const b=$('#bk');if(b)b.onclick=()=>{st.path.pop();st.clicks++;load(st.path[st.path.length-1])}}
+    load(st.path[st.path.length-1]);
+  }
+  function fallback(){
+    const ids=Object.keys(WIKI);const links=id=>[...WIKI[id].x.fr.matchAll(/\[\[(\w+)\|/g)].map(m=>m[1]);
+    const bfs=s=>{const d={[s]:0},q=[s];while(q.length){const u=q.shift();for(const v of links(u))if(d[v]==null){d[v]=d[u]+1;q.push(v)}}return d};
+    const rng=mulberry(n*7919+(c==='fr'?1:2));let start,target,best;do{start=ids[Math.floor(rng()*ids.length)];target=ids[Math.floor(rng()*ids.length)];best=bfs(start)[target]}while(start===target||!(best>=3));
+    const st=store.get(key,{path:[start],clicks:0,won:false,mode:'mini'});if(st.mode!=='mini'){st.path=[start];st.clicks=0;st.won=false;st.mode='mini'}
+    const realUrl=`https://${c}.wikipedia.org/wiki/${encodeURIComponent(pair[0].replace(/ /g,'_'))}`;
+    function draw(){
+      const cur=st.path[st.path.length-1],A=WIKI[cur];if(cur===target&&!st.won){st.won=true;fx.confetti()}store.set(key,st);
+      const txt=esc(A.x[c]).replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,id,l)=>`<a class="wl ${id===target?'target':''}" data-id="${id}">${l}</a>`);
+      $('#wb').innerHTML=`<div class="cnote">📴 ${t('offline')}</div><div class="bar"><span class="wroute">${t('wiki_from')} <b>${WIKI[start].e} ${WIKI[start].t[c]}</b> → ${t('wiki_to')} <b>🎯 ${WIKI[target].e} ${WIKI[target].t[c]}</b></span><span>${t('wiki_clicks')} : <b>${st.clicks}</b></span></div>
+      ${st.won?`<div class="result fade center" style="margin-bottom:14px"><div class="big" style="color:var(--good)">${t('wiki_win',{n:st.clicks})}</div><div>${t('wiki_best',{m:best})} ${t('comeback',{n:n+1})}</div></div>`:''}
+      <div class="article fade"><h2 class="at" style="display:flex;justify-content:space-between"><span>${A.t[c]}</span><span>${A.e}</span></h2><p class="mini">${txt}</p></div><div class="wpath">${st.path.map(p=>WIKI[p].t[c]).join(' → ')}</div><div class="actions"><button id="bk" ${st.path.length<2||st.won?'disabled':''}>${t('wiki_back')}</button></div>`;
+      if(!st.won)$('#wb').querySelectorAll('.wl').forEach(a=>a.onclick=()=>{st.path.push(a.dataset.id);st.clicks++;draw()});
+      $('#bk').onclick=()=>{st.path.pop();st.clicks++;draw()};
+    }
+    draw();
+  }
+};
+
+/* =====================================================================
+   6. JOUE LA SCÈNE — doublage phrase par phrase
+   Extraits intégrés (scènes originales) + import de ton propre extrait vidéo
+   ===================================================================== */
+const SCENES=[
+{e:'🕵️',g:{fr:'Polar',en:'Crime'},ti:{fr:"L'interrogatoire",en:'The Interrogation'},cast:{fr:['Inspectrice','Suspect'],en:['Inspector','Suspect']},l:[
+[0,"Asseyez-vous. On a retrouvé vos empreintes sur le pot de confiture.","Sit down. We found your fingerprints on the jam jar."],
+[1,"Quelle confiture ? Je ne mange que du miel.","What jam? I only eat honey."],
+[0,"Le pot était vide. Et vous avez de la fraise sur la moustache.","The jar was empty. And you've got strawberry on your moustache."],
+[1,"C'est… du rouge à lèvres. J'avais un rendez-vous.","That's… lipstick. I had a date."],
+[0,"Avec qui ?","With whom?"],
+[1,"Avec… le pot de confiture. D'accord, j'avoue tout !","With… the jam jar. Fine, I confess everything!"]]},
+{e:'🚀',g:{fr:'Science-fiction',en:'Sci-fi'},ti:{fr:'Problème à bord',en:'Trouble on Board'},cast:{fr:['Commandante','Pilote','Robot'],en:['Commander','Pilot','Robot']},l:[
+[0,"Rapport de situation, pilote !","Status report, pilot!"],
+[1,"Le moteur gauche fait un bruit de chat qui éternue.","The left engine sounds like a sneezing cat."],
+[2,"Analyse terminée. Ce n'est pas le moteur. C'est un chat.","Analysis complete. It is not the engine. It is a cat."],
+[0,"Qui a fait monter un chat dans la fusée ?","Who brought a cat onto the rocket?"],
+[1,"Il avait l'air tout seul…","He looked so lonely…"],
+[2,"Le chat a pris le contrôle du vaisseau. Bonne chance à tous.","The cat has taken control of the ship. Good luck, everyone."]]},
+{e:'💘',g:{fr:'Romance',en:'Romance'},ti:{fr:'La demande',en:'The Proposal'},cast:{fr:['Léa','Max'],en:['Lea','Max']},l:[
+[1,"Léa… ça fait trois ans que je prépare ce moment.","Lea… I've been planning this moment for three years."],
+[0,"Max, pourquoi tu es à genoux au milieu du supermarché ?","Max, why are you kneeling in the middle of the supermarket?"],
+[1,"Parce que c'est ici qu'on s'est rencontrés. Rayon surgelés.","Because this is where we met. Frozen food aisle."],
+[0,"Oh non… Oh oui… Relève-toi, tout le monde nous regarde !","Oh no… Oh yes… Get up, everyone's looking at us!"],
+[1,"Alors, tu veux bien… partager ma carte de fidélité pour toujours ?","So, will you… share my loyalty card forever?"],
+[0,"Oui ! Mille fois oui !","Yes! A thousand times yes!"]]},
+{e:'👻',g:{fr:'Horreur',en:'Horror'},ti:{fr:'Le grenier',en:'The Attic'},cast:{fr:['Sam','Jo'],en:['Sam','Jo']},l:[
+[0,"Tu as entendu ce bruit ? Ça vient du grenier.","Did you hear that noise? It's coming from the attic."],
+[1,"C'est sûrement le vent. Ou une souris. Ou un fantôme.","It's probably the wind. Or a mouse. Or a ghost."],
+[0,"Pourquoi tu dis fantôme en dernier, comme si c'était normal ?","Why do you say ghost last, like it's normal?"],
+[1,"Bon, on monte ensemble. À trois. Un… deux…","Okay, we go up together. On three. One… two…"],
+[0,"Attends ! Il y a quelqu'un qui chante là-haut…","Wait! Someone's singing up there…"],
+[1,"C'est mamie. Elle fait du karaoké depuis 1987.","It's grandma. She's been doing karaoke since 1987."]]},
+{e:'🦹',g:{fr:'Super-héros',en:'Superheroes'},ti:{fr:'Le plan du méchant',en:"The Villain's Plan"},cast:{fr:['Docteur Chaos','Capitaine Éclair'],en:['Doctor Chaos','Captain Flash']},l:[
+[0,"Enfin, Capitaine Éclair, tu tombes dans mon piège !","At last, Captain Flash, you fall into my trap!"],
+[1,"Rends-toi, Docteur Chaos ! Ton plan a échoué !","Surrender, Doctor Chaos! Your plan has failed!"],
+[0,"Échoué ? J'ai déjà remplacé toutes les chaussettes de la ville par des chaussettes dépareillées !","Failed? I've already swapped every sock in the city for odd socks!"],
+[1,"Monstre ! Plus personne ne pourra s'habiller correctement !","Monster! Nobody will ever dress properly again!"],
+[0,"Exactement. Le chaos… absolu.","Exactly. Total… chaos."]]},
+{e:'📺',g:{fr:'Télé',en:'TV'},ti:{fr:'La météo',en:'The Weather Report'},cast:{fr:['Présentateur'],en:['Presenter']},l:[
+[0,"Bonsoir à tous, voici la météo de demain.","Good evening everyone, here's tomorrow's weather."],
+[0,"Au nord, des nuages. Au sud, des nuages. Au centre… surprise : des nuages.","In the north, clouds. In the south, clouds. In the middle… surprise: clouds."],
+[0,"Attention, une pluie de confettis est attendue sur Lyon vers quinze heures.","Watch out, a shower of confetti is expected over Lyon around three o'clock."],
+[0,"Et un vent de bonne humeur soufflera sur tout le pays. Bonne soirée !","And a wind of good mood will blow across the country. Good night!"]]},
+{e:'🍕',g:{fr:'Comédie',en:'Comedy'},ti:{fr:'Le livreur',en:'The Delivery'},cast:{fr:['Livreur','Client','Voisine'],en:['Courier','Customer','Neighbour']},l:[
+[0,"Bonsoir ! Une pizza quatre fromages pour monsieur Dupont ?","Good evening! A four-cheese pizza for Mr Smith?"],
+[1,"J'ai commandé une pizza hawaïenne.","I ordered a Hawaiian pizza."],
+[2,"C'est moi qui ai commandé la quatre fromages ! Je suis madame Dupont, la voisine.","I ordered the four-cheese! I'm Mrs Smith, the neighbour."],
+[1,"Il y a deux Dupont dans l'immeuble ?","There are two Smiths in the building?"],
+[0,"Il y en a sept. Et j'ai sept pizzas. Bonne chance.","There are seven. And I have seven pizzas. Good luck."]]},
+{e:'😼',g:{fr:'Mème',en:'Meme'},ti:{fr:'Le chat qui juge',en:'The Judging Cat'},cast:{fr:['Humain','Chat'],en:['Human','Cat']},l:[
+[0,"Tu veux bien descendre de la table, s'il te plaît ?","Could you please get off the table?"],
+[1,"Non.","No."],
+[0,"Tu viens de faire tomber mon verre. Exprès.","You just knocked my glass over. On purpose."],
+[1,"Prouve-le.","Prove it."],
+[0,"Je t'ai vu le pousser avec la patte en me regardant dans les yeux !","I saw you push it with your paw while looking me in the eye!"],
+[1,"La gravité est responsable. Pas moi.","Gravity did it. Not me."]]}];
+const CAST_COLORS=['#ff6b9a','#4d96ff','#3ddc84','#ffbe0b'];
+GAME_IMPL.mime=root=>{
+  const c=cl();let flt=0;list();
+  cleanups.push(()=>{if(micStream){micStream.getTracks().forEach(x=>x.stop());micStream=null}});
+  function list(){
+    root.innerHTML=`${cnote()}<p class="intro">${t('mime_intro')}</p><div class="seg" style="margin-bottom:12px">${[0,1,2,3].map(k=>`<button data-k="${k}" class="${k===flt?'on':''}">${k===0?t('all'):k===3?'👥 3+':'👥 '+k}</button>`).join('')}</div>
+    <div class="scenes">${SCENES.map((s,i)=>({s,i})).filter(({s})=>!flt||(flt===3?s.cast.fr.length>=3:s.cast.fr.length===flt)).map(({s,i})=>`<button class="scard" data-i="${i}"><span class="se">${s.e}</span><b>${esc(s.ti[c])}</b><span class="muted">${esc(s.g[c])} · ${s.l.length} ${c==='fr'?'phrases':'lines'}</span><span class="badge">${t('mime_persons',{n:s.cast.fr.length})}</span></button>`).join('')}
+    <button class="scard imp" id="imp"><span class="se">📁</span><b>${t('mime_import')}</b><span class="muted">${t('mime_import_d')}</span></button></div>`;
+    root.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{flt=+b.dataset.k;list()});
+    root.querySelectorAll('.scard[data-i]').forEach(b=>b.onclick=()=>scene(SCENES[+b.dataset.i]));
+    $('#imp').onclick=video;
+  }
+  async function micOrWarn(el){try{return await getMic()}catch(e){el.innerHTML=`<div class="cnote">${t('mime_mic')}</div>`;return null}}
+  /* --- scène intégrée --- */
+  function scene(S){
+    const cast=S.cast[c],L2=S.l.map(x=>({who:x[0],txt:c==='fr'?x[1]:x[2]}));const takes=[];let i=0,rec=null;
+    const tts=('speechSynthesis' in window);
+    const speak=(k)=>new Promise(res=>{if(!tts)return res();const u=new SpeechSynthesisUtterance(L2[k].txt);u.lang=c==='fr'?'fr-FR':'en-GB';u.pitch=[1,.6,1.5,1.2][L2[k].who];u.rate=1;u.onend=res;u.onerror=res;speechSynthesis.speak(u)});
+    function draw(){
+      const ln=L2[i],col=CAST_COLORS[ln.who];
+      root.innerHTML=`<div class="actions" style="margin:0 0 12px"><button id="bk">${t('mime_back')}</button></div><h2 style="margin-bottom:8px">${S.e} ${esc(S.ti[c])} <span class="tag">${t('mime_persons',{n:cast.length})}</span></h2>
+      <div class="cast">${cast.map((p,k)=>`<span style="background:${CAST_COLORS[k]}33;color:${CAST_COLORS[k]}">${esc(p)}</span>`).join('')}</div>
+      <div class="linecard fade" style="border-color:${col}"><div class="muted">${t('mime_line',{i:i+1,n:L2.length})}</div><div class="who" style="color:${col}">${esc(cast[ln.who])}</div><div class="txt">« ${esc(ln.txt)} »</div>
+      <div class="actions" style="justify-content:center"><button id="pv" ${i===0?'disabled':''}>←</button><button id="or" ${tts?'':'disabled'}>${t('mime_orig')}</button><button class="primary ${rec?'rec':''}" id="rc">${rec?t('mime_stop'):t('mime_rec')}</button><button id="tk" ${takes[i]?'':'disabled'}>${t('mime_take')}</button><button id="nx" ${i===L2.length-1?'disabled':''}>→</button></div><div id="mw"></div></div>
+      <div class="actions"><button id="all" ${tts?'':'disabled'}>${t('mime_playall')}</button><button class="primary" id="dub" ${takes.some(Boolean)?'':'disabled'}>${t('mime_playdub')}</button></div>
+      <p class="note">${tts?t('mime_orig_note'):t('mime_tts')}</p>
+      <div class="lines">${L2.map((x,k)=>`<div data-k="${k}" class="${k===i?'on':''}"><span>${takes[k]?'✅':'⬜'}</span><b style="color:${CAST_COLORS[x.who]}">${esc(cast[x.who])}</b><span>${esc(x.txt)}</span></div>`).join('')}</div>`;
+      $('#bk').onclick=()=>{try{speechSynthesis.cancel()}catch(e){}list()};
+      $('#pv').onclick=()=>{i--;draw()};$('#nx').onclick=()=>{i++;draw()};
+      $('#or').onclick=()=>{speechSynthesis.cancel();speak(i)};
+      $('#tk').onclick=()=>new Audio(takes[i]).play();
+      root.querySelectorAll('.lines div').forEach(d=>d.onclick=()=>{i=+d.dataset.k;draw()});
+      $('#rc').onclick=async()=>{if(rec){rec.stop();const url=await rec.done;rec=null;takes[i]=url;if(i<L2.length-1)i++;draw();return}const s=await micOrWarn($('#mw'));if(!s)return;rec=startRec(s);draw()};
+      $('#all').onclick=async()=>{speechSynthesis.cancel();for(let k=0;k<L2.length;k++){if(!root.isConnected)return;i=k;draw();await speak(k)}};
+      $('#dub').onclick=async()=>{for(let k=0;k<L2.length;k++){if(!root.isConnected)return;i=k;draw();if(takes[k])await new Promise(r=>{const a=new Audio(takes[k]);a.onended=r;a.onerror=r;a.play().catch(r)});else await speak(k)}};
+    }
+    draw();
+  }
+  /* --- import d'un extrait vidéo --- */
+  function video(){
+    let phrases=[],cuts=[],takes=[],people=2,bg='r',actx=null,gO,gL,gR,stopFlag=false;
+    root.innerHTML=`<div class="actions" style="margin:0 0 12px"><button id="bk">${t('mime_back')}</button></div><h2 style="margin-bottom:10px">📁 ${t('mime_import')}</h2>
+    <div class="row2"><label class="f">${t('mime_video')}<input type="file" id="fv" accept="video/*"></label><label class="f">${t('mime_srt')}<input type="file" id="fs" accept=".srt,.vtt,text/plain"></label></div>
+    <div class="row2" style="margin-top:10px"><label class="f">${t('mime_people')}<input type="number" id="pp" min="1" max="20" value="${people}"></label><label class="f">${t('mime_bg')}<select id="bgm"><option value="r">${t('mime_bg_r')}</option><option value="m">${t('mime_bg_m')}</option><option value="o">${t('mime_bg_o')}</option></select></label></div>
+    <div id="vz" style="margin-top:14px"></div>`;
+    $('#bk').onclick=list;$('#pp').oninput=e=>{people=+e.target.value||1;const b=$('#ppb');if(b)b.textContent=t('mime_persons',{n:people})};$('#bgm').onchange=e=>bg=e.target.value;
+    $('#fv').onchange=e=>{const f=e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);cleanups.push(()=>URL.revokeObjectURL(url));
+      $('#vz').innerHTML=`<span class="tag" id="ppb" style="background:var(--accent);color:#1b1b1b;font-weight:700">${t('mime_persons',{n:people})}</span><video id="vd" src="${url}" controls playsinline style="margin-top:8px"></video><p class="note">${t('mime_cut_h')}</p><div class="actions"><button class="primary" id="cut">${t('mime_cut')}</button><button id="rst">${t('mime_reset')}</button><button id="dub" class="primary">${t('mime_playdub')}</button><button id="stp">${t('mime_stopall')}</button></div><div id="mw"></div><div id="ph"></div>`;
+      const v=$('#vd');
+      $('#cut').onclick=()=>{cuts.push(v.currentTime);cuts.sort((a,b)=>a-b);fromCuts();drawPh()};
+      $('#rst').onclick=()=>{cuts=[];phrases=[];takes=[];drawPh()};
+      $('#stp').onclick=()=>{stopFlag=true;v.pause()};
+      $('#dub').onclick=playDub;
+      v.onloadedmetadata=()=>{if(phrases.length===0&&cuts.length===0)drawPh()};
+    };
+    $('#fs').onchange=async e=>{const f=e.target.files[0];if(!f)return;phrases=parseSrt(await f.text());takes=[];drawPh()};
+    function fromCuts(){const v=$('#vd');const pts=[0,...cuts];phrases=pts.map((s,k)=>({s,e:k+1<pts.length?pts[k+1]:(cuts.length?Math.min(v.duration||s+5,s+8):s),txt:''})).filter(p=>p.e-p.s>0.2)}
+    function parseSrt(txt){return txt.replace(/\r/g,'').split(/\n\n+/).map(b=>{const m=b.match(/(\d+):(\d+):(\d+)[,.](\d+)\s*-->\s*(\d+):(\d+):(\d+)[,.](\d+)/);if(!m)return null;const tm=(h,mi,s,ms)=>+h*3600+ +mi*60+ +s+ +ms/1000;const lines=b.split('\n');const idx=lines.findIndex(l=>l.includes('-->'));return{s:tm(m[1],m[2],m[3],m[4]),e:tm(m[5],m[6],m[7],m[8]),txt:lines.slice(idx+1).join(' ').replace(/<[^>]+>/g,'')}}).filter(Boolean)}
+    const ft=x=>{const m=Math.floor(x/60),s=(x%60).toFixed(1).padStart(4,'0');return `${m}:${s}`};
+    function drawPh(){const el=$('#ph');if(!el)return;el.innerHTML=phrases.length?phrases.map((p,k)=>`<div class="phr"><span class="tm">#${k+1}<br>${ft(p.s)}–${ft(p.e)}</span><span>${esc(p.txt||'…')}</span><span class="bt"><button data-a="o" data-k="${k}">${t('mime_orig')}</button><button data-a="r" data-k="${k}" class="primary">${t('mime_dub')}</button><button data-a="t" data-k="${k}" ${takes[k]?'':'disabled'}>${t('mime_take')}</button></span></div>`).join(''):'';
+      el.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=+b.dataset.k;if(b.dataset.a==='o')seg(k,'o');else if(b.dataset.a==='r')recSeg(k,b);else new Audio(takes[k]).play()})}
+    function graph(){const v=$('#vd');if(actx)return;try{actx=new (window.AudioContext||window.webkitAudioContext)();const src=actx.createMediaElementSource(v);const sp=actx.createChannelSplitter(2);gO=actx.createGain();gL=actx.createGain();gR=actx.createGain();const sum=actx.createGain();src.connect(gO).connect(actx.destination);src.connect(sp);sp.connect(gL,0);sp.connect(gR,1);gL.connect(sum);gR.connect(sum);sum.connect(actx.destination);cleanups.push(()=>actx.close())}catch(e){actx=null}}
+    function setMode(m){const v=$('#vd');graph();if(!actx){v.muted=m!=='o';return}actx.resume();v.muted=false;gO.gain.value=m==='o'?1:0;gL.gain.value=m==='r'?1:0;gR.gain.value=m==='r'?-1:0}
+    function seg(k,mode){return new Promise(res=>{const v=$('#vd'),p=phrases[k];setMode(mode);v.currentTime=p.s;v.play().catch(()=>{});const iv=setInterval(()=>{if(!root.isConnected||v.currentTime>=p.e||v.paused){clearInterval(iv);v.pause();res()}},40);timers.push(iv)})}
+    async function recSeg(k,btn){const s=await micOrWarn($('#mw'));if(!s)return;btn.classList.add('rec');const r=startRec(s);await seg(k,bg);r.stop();takes[k]=await r.done;drawPh()}
+    function playDub(){const v=$('#vd');if(!v)return;stopFlag=false;setMode(bg);const played=new Set();v.currentTime=0;v.play().catch(()=>{});const iv=setInterval(()=>{if(stopFlag||!root.isConnected||v.ended){clearInterval(iv);return}phrases.forEach((p,k)=>{if(takes[k]&&!played.has(k)&&v.currentTime>=p.s&&v.currentTime<p.e){played.add(k);new Audio(takes[k]).play().catch(()=>{})}})},40);timers.push(iv)}
+  }
+};
+
+/* =====================================================================
+   7. QUELLE TAILLE ? — cadre quadrillé, on étire l'objet
+   ===================================================================== */
+const SIZES=[
+['🐜',{fr:'Une fourmi',en:'An ant',es:'Una hormiga',de:'Eine Ameise'},0.005],
+['🍚',{fr:'Un grain de riz',en:'A grain of rice',es:'Un grano de arroz',de:'Ein Reiskorn'},0.007],
+['🍓',{fr:'Une fraise',en:'A strawberry',es:'Una fresa',de:'Eine Erdbeere'},0.035],
+['📱',{fr:'Un smartphone',en:'A smartphone',es:'Un smartphone',de:'Ein Smartphone'},0.15],
+['🏀',{fr:'Un ballon de basket',en:'A basketball',es:'Un balón de baloncesto',de:'Ein Basketball'},0.24],
+['🐈',{fr:'Un chat (assis)',en:'A cat (sitting)',es:'Un gato (sentado)',de:'Eine Katze (sitzend)'},0.3],
+['🚪',{fr:'Une porte',en:'A door',es:'Una puerta',de:'Eine Tür'},2.04],
+['🧍',{fr:'Un humain moyen',en:'An average human',es:'Un humano medio',de:'Ein durchschnittlicher Mensch'},1.7],
+['🐘',{fr:"Un éléphant d'Afrique",en:'An African elephant',es:'Un elefante africano',de:'Ein Afrikanischer Elefant'},3.3],
+['🦒',{fr:'Une girafe',en:'A giraffe',es:'Una jirafa',de:'Eine Giraffe'},5.5],
+['🏠',{fr:'Une maison à un étage',en:'A two-storey house',es:'Una casa de dos plantas',de:'Ein zweistöckiges Haus'},7.5],
+['🦖',{fr:'Un T-rex (hauteur)',en:'A T-rex (height)',es:'Un T-rex (altura)',de:'Ein T-Rex (Höhe)'},4],
+['🌴',{fr:'Un palmier',en:'A palm tree',es:'Una palmera',de:'Eine Palme'},20],
+['🗽',{fr:'La statue de la Liberté (avec socle)',en:'Statue of Liberty (with pedestal)',es:'La Estatua de la Libertad (con pedestal)',de:'Freiheitsstatue (mit Sockel)'},93],
+['🌲',{fr:'Le plus haut arbre du monde',en:"The world's tallest tree",es:'El árbol más alto del mundo',de:'Der höchste Baum der Welt'},116],
+['🔺',{fr:'La pyramide de Khéops',en:'The Great Pyramid of Giza',es:'La pirámide de Keops',de:'Die Cheops-Pyramide'},139],
+['🗼',{fr:'La tour Eiffel',en:'The Eiffel Tower',es:'La Torre Eiffel',de:'Der Eiffelturm'},330],
+['🏙️',{fr:"L'Empire State Building",en:'The Empire State Building',es:'El Empire State Building',de:'Das Empire State Building'},443],
+['🏢',{fr:'Le Burj Khalifa',en:'The Burj Khalifa',es:'El Burj Khalifa',de:'Der Burj Khalifa'},828],
+['🗻',{fr:'Le mont Fuji',en:'Mount Fuji',es:'El monte Fuji',de:'Der Fuji'},3776],
+['🏔️',{fr:'Le mont Everest',en:'Mount Everest',es:'El monte Everest',de:'Der Mount Everest'},8849],
+['✈️',{fr:"L'altitude d'un avion de ligne",en:'Cruising altitude of an airliner',es:'Altitud de crucero de un avión',de:'Reiseflughöhe eines Flugzeugs'},11000]];
+function fmtLen(m){const nf=(v,d)=>new Intl.NumberFormat(lang,{maximumFractionDigits:d}).format(v);if(m>=1000)return nf(m/1000,m>=10000?0:1)+' km';if(m>=1)return nf(m,m>=100?0:1)+' m';if(m>=0.01)return nf(m*100,m>=0.1?0:1)+' cm';return nf(m*1000,1)+' mm'}
+GAME_IMPL.taille=root=>{
+  const N=6;let i=0,total=0,list=shuffle(SIZES).slice(0,N);
+  const emo=e=>`<svg class="te" viewBox="0 0 100 100" preserveAspectRatio="xMidYMax meet"><text x="50" y="82" font-size="94" text-anchor="middle">${e}</text></svg>`;
+  const sz=(o,hh)=>{o.style.height=hh+'px';const s=o.querySelector('.te');s.style.height=Math.max(2,hh)+'px';s.style.width=Math.max(2,hh)+'px'};
+  function niceStep(x){const p=10**Math.floor(Math.log10(x));const m=x/p;return(m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+  function show(){
+    const T=list[i];const H=T[2]*(1.4+Math.random()*1.8);
+    const refs=SIZES.filter(s=>s!==T&&s[2]<H*0.8&&s[2]>H*0.1);
+    const R=refs.length?refs.reduce((a,b)=>Math.abs(Math.log(b[2]/(H*.45)))<Math.abs(Math.log(a[2]/(H*.45)))?b:a):null;
+    const step=niceStep(H/6);
+    root.innerHTML=`<div class="bar"><span>${t('round')} ${i+1}/${N}</span><span>${t('score')} : <b>${fmt(total)}</b></span></div><p class="intro">${t('tai_q')}</p><div class="tgrid" id="tg"></div><div class="tinfo"><span>${t('tai_yours')} : <b id="est" class="big"></b></span><button class="primary" id="ok">${t('validate')}</button></div><div id="res"></div>`;
+    const tg=$('#tg'),FH=tg.clientHeight,FW=tg.clientWidth,px=m=>m/H*FH;
+    let g='';for(let v=step;v<H*0.999;v+=step)g+=`<div class="gl" style="bottom:${px(v)}px"><span>${fmtLen(v)}</span></div>`;
+    const vstep=px(step);for(let x=vstep;x<FW;x+=vstep)g+=`<div class="vgl" style="left:${x}px"></div>`;
+    tg.innerHTML=g+(R?`<div class="tobj" style="left:16%;height:${px(R[2])}px">${emo(R[0])}<div class="tl">${t('tai_ref')} : ${esc(L(R[1]))}<br>${fmtLen(R[2])}</div></div>`:'')+`<div class="tobj tgt" id="tgt" style="left:62%"><div class="handle" id="hd">⇕</div>${emo(T[0])}<div class="tl">${esc(L(T[1]))}</div></div>`;
+    tg.querySelectorAll('.tobj').forEach(o=>{const hh=parseFloat(o.style.height)||0;if(hh)sz(o,hh)});
+    const tgt=$('#tgt'),hd=$('#hd');let h=FH*(0.15+Math.random()*0.45),locked=false;
+    const set=v=>{h=Math.max(2,Math.min(FH,v));tgt.style.transition='none';tgt.querySelector('.te').style.transition='none';sz(tgt,h);$('#est').textContent=fmtLen(h/FH*H)};set(h);
+    let drag=false;
+    const mv=e=>{if(!drag||locked)return;const r=tg.getBoundingClientRect();set(r.bottom-e.clientY)};
+    hd.addEventListener('pointerdown',e=>{if(locked)return;e.preventDefault();e.stopPropagation();drag=true;const up=()=>{drag=false;window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up)};window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);cleanups.push(up)});
+    tg.addEventListener('pointerdown',e=>{if(locked||e.target===hd)return;const r=tg.getBoundingClientRect();set(r.bottom-e.clientY)});
+    $('#ok').onclick=()=>{
+      locked=true;hd.remove();const gm=h/FH*H,r=T[2],pts=Math.round(1000*Math.max(0,1-Math.abs(Math.log10(gm/r))/0.4));total+=pts;
+      tg.insertAdjacentHTML('beforeend',`<div class="gl real" style="bottom:${Math.min(FH,px(r))}px"><span>${t('tai_real')} : ${fmtLen(r)}</span></div>`);
+      requestAnimationFrame(()=>{tgt.style.transition='';tgt.querySelector('.te').style.transition='';sz(tgt,Math.min(FH,px(r)))});
+      $('#ok').remove();const last=i===N-1;if(pts>=800)fx.toast('🎯 +'+pts);
+      $('#res').innerHTML=`<div class="result fade"><div>${t('tai_yours')} : <b>${fmtLen(gm)}</b> · ${t('tai_real')} : <b style="color:var(--accent)">${fmtLen(r)}</b></div><div class="big" style="color:${pts>700?'var(--good)':pts>350?'var(--mid)':'var(--bad)'}">+${pts}</div><div class="actions"><button class="primary" id="nx">${t('next')} →</button></div></div>`;
+      $('#nx').onclick=()=>{if(last)end();else{i++;show()}};
+    };
+  }
+  show();
+  function end(){if(total>=N*600)fx.confetti();root.innerHTML=`<div class="panel center fade"><div style="font-size:3rem">📏</div><div class="big">${t('tai_end',{n:fmt(total),m:fmt(N*1000)})}</div><div class="actions" style="justify-content:center"><button class="primary" id="re">${t('restart')}</button></div></div>`;$('#re').onclick=()=>{list=shuffle(SIZES).slice(0,N);i=0;total=0;show()}}
+};
+
+/* =====================================================================
+   8 & 9. ABYSSE (réponse la plus rare) et SPACE (réponse la plus citée)
+   Réponses classées de la plus citée à la plus rare. "a/b" = synonymes.
+   ===================================================================== */
+const QBANK={fr:[
+"Cite un fruit|pomme,banane,fraise,orange,poire,cerise,kiwi,ananas,raisin,peche,mangue,abricot,citron,melon,pasteque,framboise,prune,myrtille,figue,grenade,litchi,mure,clementine,mandarine,groseille,papaye,nectarine,kaki,goyave,coing,physalis,kumquat,carambole,ramboutan,durian,nefle",
+"Cite un animal de la ferme|vache,cochon/porc,poule,mouton,cheval,chevre,canard,lapin,ane,dinde,oie,coq,chien,chat,taureau,poussin,agneau,veau,pintade,lama,alpaga,caille,mulet,paon,autruche",
+"Cite un pays d'Europe|france,espagne,italie,allemagne,angleterre/royaume uni,belgique,suisse,portugal,grece,pologne,pays bas/hollande,suede,norvege,irlande,autriche,danemark,finlande,roumanie,hongrie,croatie,republique tcheque,bulgarie,ukraine,islande,luxembourg,serbie,slovaquie,slovenie,lituanie,lettonie,estonie,albanie,malte,monaco,andorre,moldavie,montenegro,bosnie,macedoine du nord/macedoine,liechtenstein,saint marin,vatican",
+"Cite une couleur|rouge,bleu,vert,jaune,noir,blanc,rose,violet,orange,gris,marron,beige,turquoise,or/dore,argent/argente,bordeaux,cyan,magenta,indigo,kaki,ocre,lavande,saumon,fuchsia,ivoire,pourpre,emeraude,corail,vermillon,cramoisi,azur,ecru,anthracite,taupe",
+"Cite un sport|football/foot,tennis,basket/basketball,rugby,natation,handball,volley/volleyball,ski,cyclisme/velo,judo,golf,boxe,athletisme,equitation,badminton,escrime,karate,surf,gymnastique,ping pong/tennis de table,escalade,aviron,hockey,baseball,cricket,curling,polo,squash,triathlon,lutte,petanque,kayak,biathlon,bobsleigh,water polo,crosse",
+"Cite un instrument de musique|guitare,piano,violon,batterie,flute,trompette,saxophone,harpe,violoncelle,accordeon,clarinette,basse,ukulele,harmonica,trombone,tambour,xylophone,banjo,orgue,contrebasse,hautbois,cor,tuba,triangle,cornemuse,mandoline,synthetiseur,maracas,cithare,sitar,basson,theremine,didgeridoo",
+"Cite un légume|carotte,tomate,salade/laitue,haricot,courgette,poireau,pomme de terre/patate,brocoli,chou,petit pois,aubergine,poivron,concombre,epinard,navet,radis,oignon,chou fleur,celeri,potiron,citrouille,betterave,artichaut,asperge,endive,fenouil,panais,butternut,blette,topinambour,rutabaga,salsifis,cresson,gombo",
+"Cite un métier|medecin/docteur,professeur/prof,pompier,policier,boulanger,avocat,infirmier,ingenieur,cuisinier,vendeur,coiffeur,architecte,plombier,electricien,agriculteur,veterinaire,dentiste,pilote,journaliste,facteur,menuisier,macon,pharmacien,comptable,banquier,astronaute,boucher,fleuriste,serrurier,notaire,horloger,apiculteur,luthier,cordonnier,ramoneur",
+"Cite une ville de France|paris,marseille,lyon,toulouse,nice,bordeaux,lille,nantes,strasbourg,montpellier,rennes,grenoble,toulon,dijon,reims,le havre,brest,tours,angers,nimes,metz,limoges,clermont ferrand,perpignan,besancon,orleans,rouen,caen,avignon,la rochelle,pau,ajaccio,annecy,colmar,quimper,arras,chartres,vannes,albi,tarbes",
+"Cite un animal marin|requin,baleine,dauphin,poisson,pieuvre/poulpe,meduse,crabe,tortue,phoque,orque,etoile de mer,homard,crevette,raie,calamar,hippocampe,moule,huitre,otarie,morse,espadon,thon,anguille,murene,oursin,narval,lamantin,beluga,cachalot,anemone,barracuda,baudroie,krill,nautile,dugong",
+"Cite une marque de voiture|renault,peugeot,citroen,bmw,mercedes,audi,volkswagen,toyota,ferrari,tesla,fiat,ford,porsche,lamborghini,nissan,honda,opel,kia,hyundai,dacia,volvo,mazda,jeep,skoda,seat,mini,alfa romeo,suzuki,jaguar,bugatti,maserati,lexus,chevrolet,aston martin,bentley,rolls royce,lancia,subaru,mitsubishi,cadillac,lotus,alpine,mclaren,koenigsegg,pagani",
+"Cite un objet de la cuisine|frigo/refrigerateur,four,couteau,fourchette,cuillere,assiette,casserole,poele,verre,micro ondes,evier,bol,tasse,lave vaisselle,grille pain,bouilloire,cafetiere,spatule,louche,passoire,mixeur,fouet,saladier,planche a decouper/planche,ouvre boite,rape,tablier,torchon,eponge,minuteur,rouleau a patisserie/rouleau,entonnoir,pilon,chinois",
+"Cite un oiseau|pigeon,aigle,moineau,merle,corbeau,perroquet,mouette,hibou,chouette,pie,rouge gorge,mesange,cygne,canard,faucon,pingouin,manchot,flamant rose,autruche,colibri,paon,cigogne,heron,vautour,toucan,pelican,hirondelle,rossignol,pivert,geai,martin pecheur,albatros,condor,kiwi,emeu,ara,macareux",
+"Cite un dessert|gateau,glace,tarte,crepe,mousse au chocolat,tiramisu,creme brulee,fondant,eclair,macaron,cookie,brownie,flan,ile flottante,profiterole,mille feuille,cheesecake,gaufre,salade de fruits,clafoutis,panna cotta,baba au rhum,paris brest,crumble,sorbet,charlotte,fraisier,opera,financier,madeleine,canele,kouign amann,far breton,saint honore,pavlova,savarin",
+"Cite un vêtement|pantalon,t shirt/tee shirt,pull,chemise,robe,jupe,chaussette,veste,manteau,jean,short,casquette,echarpe,gants,bonnet,sweat,blouson,cravate,costume,pyjama,gilet,debardeur,legging,kimono,poncho,sari,kilt,salopette,bermuda,smoking,cape,tunique,cardigan,parka,combinaison",
+"Cite un jeu de société|monopoly,uno,echecs,scrabble,cluedo,puissance 4,dames,loup garou,trivial pursuit,dobble,jungle speed,risk,catan,dixit,belote,poker,mille bornes,taboo,pictionary,petits chevaux,domino,yahtzee,bonne paye,qui est ce,time s up,codenames,carcassonne,7 wonders,splendor,mysterium,pandemic,azul,aventuriers du rail,mahjong,go,backgammon,othello,abalone,hanabi"],
+en:[
+"Name a fruit|apple,banana,orange,strawberry,grape,pear,cherry,pineapple,mango,watermelon,peach,lemon,kiwi,blueberry,raspberry,plum,melon,apricot,lime,coconut,grapefruit,pomegranate,fig,papaya,blackberry,nectarine,lychee,passion fruit,guava,cranberry,date,quince,persimmon,kumquat,starfruit,durian,rambutan",
+"Name a farm animal|cow,pig,chicken,sheep,horse,goat,duck,donkey,turkey,goose,rabbit,dog,cat,rooster,bull,lamb,calf,llama,alpaca,ox,mule,guinea fowl,quail,peacock,ostrich",
+"Name a European country|france,spain,italy,germany,england/united kingdom/uk,ireland,portugal,greece,switzerland,belgium,netherlands/holland,sweden,norway,poland,austria,denmark,finland,iceland,scotland,wales,croatia,hungary,romania,czech republic/czechia,ukraine,bulgaria,serbia,luxembourg,slovakia,slovenia,lithuania,latvia,estonia,albania,malta,monaco,andorra,moldova,montenegro,bosnia,north macedonia/macedonia,liechtenstein,san marino,vatican",
+"Name a colour|red,blue,green,yellow,black,white,purple,orange,pink,brown,grey/gray,gold,silver,turquoise,beige,navy,cyan,magenta,indigo,violet,maroon,teal,lavender,khaki,ochre,salmon,fuchsia,ivory,crimson,emerald,coral,vermilion,azure,taupe,mauve",
+"Name a sport|football/soccer,basketball,tennis,baseball,golf,rugby,cricket,swimming,hockey,volleyball,boxing,cycling,running,skiing,badminton,table tennis/ping pong,athletics,gymnastics,wrestling,surfing,climbing,rowing,fencing,judo,karate,lacrosse,polo,squash,handball,triathlon,archery,curling,bobsleigh,water polo,biathlon",
+"Name a musical instrument|guitar,piano,drums,violin,flute,trumpet,saxophone,harp,cello,clarinet,bass,ukulele,harmonica,trombone,keyboard,banjo,accordion,xylophone,organ,tuba,triangle,double bass,oboe,bagpipes,mandolin,synthesizer,tambourine,french horn,maracas,sitar,bassoon,zither,theremin,didgeridoo",
+"Name a vegetable|carrot,potato,broccoli,tomato,lettuce,onion,cucumber,pea,cabbage,pepper,corn,spinach,cauliflower,celery,bean,mushroom,courgette/zucchini,aubergine/eggplant,pumpkin,leek,garlic,radish,beetroot,asparagus,sweet potato,parsnip,turnip,kale,artichoke,squash,fennel,brussels sprout,swede,okra,kohlrabi",
+"Name a job|doctor,teacher,nurse,firefighter,police officer/policeman,lawyer,engineer,chef,builder,farmer,pilot,dentist,vet,plumber,electrician,accountant,scientist,mechanic,baker,hairdresser,journalist,architect,banker,postman,carpenter,pharmacist,butcher,astronaut,florist,locksmith,librarian,beekeeper,cobbler,chimney sweep,watchmaker",
+"Name a big city|london,new york,paris,tokyo,los angeles,rome,berlin,madrid,sydney,dubai,beijing,moscow,chicago,toronto,mumbai,rio de janeiro,barcelona,amsterdam,hong kong,singapore,istanbul,mexico city,cairo,bangkok,seoul,shanghai,buenos aires,lagos,lima,jakarta,karachi,dhaka,kinshasa,bogota,tehran",
+"Name a sea animal|shark,whale,dolphin,fish,octopus,jellyfish,crab,turtle,seal,starfish,lobster,shrimp,orca,squid,seahorse,stingray,clam,oyster,sea lion,walrus,swordfish,tuna,eel,sea urchin,narwhal,manatee,beluga,sperm whale,anemone,barracuda,anglerfish,krill,nautilus,dugong",
+"Name a car brand|ford,toyota,bmw,mercedes,audi,volkswagen,honda,ferrari,tesla,chevrolet,nissan,porsche,lamborghini,hyundai,kia,jeep,mazda,volvo,fiat,land rover,jaguar,subaru,mini,lexus,dodge,peugeot,renault,bentley,rolls royce,aston martin,bugatti,maserati,cadillac,mclaren,lotus,citroen,skoda,alfa romeo,koenigsegg,pagani",
+"Name something in a kitchen|fridge/refrigerator,oven,knife,fork,spoon,plate,pan,kettle,microwave,sink,toaster,cup,mug,bowl,glass,dishwasher,pot,spatula,blender,cooker/stove,ladle,whisk,colander,chopping board,can opener,grater,apron,tea towel,sponge,timer,rolling pin,funnel,pestle,mortar,sieve",
+"Name a bird|eagle,robin,pigeon,parrot,crow,owl,sparrow,seagull,penguin,swan,duck,flamingo,hawk,blackbird,peacock,ostrich,hummingbird,falcon,pelican,stork,heron,vulture,toucan,magpie,swallow,woodpecker,kingfisher,albatross,condor,kiwi,emu,jay,macaw,puffin,nightingale",
+"Name a dessert|ice cream,cake,chocolate cake,apple pie,cheesecake,brownie,cookie,pudding,tiramisu,doughnut/donut,cupcake,trifle,crumble,pancake,waffle,mousse,custard,fruit salad,eclair,macaron,muffin,jelly,sorbet,creme brulee,banoffee pie,pavlova,panna cotta,profiterole,lemon tart,eton mess,sticky toffee pudding,baklava,churros,mochi,key lime pie",
+"Name an item of clothing|shirt,trousers/pants,t shirt,jeans,dress,skirt,jumper/sweater,socks,jacket,coat,hat,shorts,scarf,gloves,hoodie,tie,suit,pyjamas,vest,cardigan,leggings,blouse,cap,beanie,kimono,poncho,sari,kilt,dungarees/overalls,tuxedo,cape,tunic,parka,jumpsuit,bow tie",
+"Name a board game|monopoly,chess,scrabble,cluedo/clue,snakes and ladders,uno,checkers/draughts,risk,trivial pursuit,connect four,battleship,guess who,catan,ludo,backgammon,jenga,pictionary,articulate,cranium,mouse trap,operation,ticket to ride,carcassonne,codenames,pandemic,dominoes,mahjong,go,othello,dixit,azul,splendor,7 wonders,hanabi,mysterium"]};
+/* Jalons (descente / montée infinies) */
+const MILESTONES={abyss:[
+[50,{fr:'Limite des plongeurs loisirs',en:'Recreational diving limit',es:'Límite del buceo recreativo',de:'Grenze für Sporttaucher'}],
+[200,{fr:'Zone crépusculaire',en:'Twilight zone',es:'Zona crepuscular',de:'Dämmerzone'}],
+[332,{fr:'Record de plongée en bouteille',en:'Scuba diving record',es:'Récord de buceo',de:'Tauchrekord'}],
+[1000,{fr:'Zone de minuit (plus aucune lumière)',en:'Midnight zone (no light)',es:'Zona de medianoche',de:'Mitternachtszone'}],
+[2250,{fr:'Plongée record du cachalot',en:'Sperm whale record dive',es:'Récord del cachalote',de:'Pottwal-Rekord'}],
+[3800,{fr:'Épave du Titanic',en:'Titanic wreck',es:'Restos del Titanic',de:'Titanic-Wrack'}],
+[6000,{fr:'Zone abyssale',en:'Abyssal zone',es:'Zona abisal',de:'Abyssal'}],
+[10935,{fr:'Fond de la fosse des Mariannes',en:'Bottom of the Mariana Trench',es:'Fondo de la fosa de las Marianas',de:'Grund des Marianengrabens'}],
+[12262,{fr:'Forage le plus profond du monde',en:'Deepest borehole ever',es:'Perforación más profunda',de:'Tiefste Bohrung'}],
+[35000,{fr:'Fin de la croûte terrestre',en:"End of the Earth's crust",es:'Fin de la corteza terrestre',de:'Ende der Erdkruste'}],
+[670000,{fr:'Manteau terrestre profond',en:'Deep mantle',es:'Manto profundo',de:'Tiefer Erdmantel'}],
+[2890000,{fr:'Noyau externe (fer liquide)',en:'Outer core (liquid iron)',es:'Núcleo externo',de:'Äußerer Kern'}],
+[5150000,{fr:'Noyau interne',en:'Inner core',es:'Núcleo interno',de:'Innerer Kern'}],
+[6371000,{fr:'Centre de la Terre',en:'Centre of the Earth',es:'Centro de la Tierra',de:'Erdmittelpunkt'}],
+[12742000,{fr:"De l'autre côté de la Terre !",en:'The other side of the Earth!',es:'¡El otro lado de la Tierra!',de:'Die andere Seite der Erde!'}]],
+space:[
+[1,{fr:'Nuages bas',en:'Low clouds',es:'Nubes bajas',de:'Tiefe Wolken'}],
+[11,{fr:'Avions de ligne',en:'Airliners',es:'Aviones',de:'Flugzeuge'}],
+[39,{fr:'Record du saut en parachute',en:'Highest skydive',es:'Récord de salto',de:'Höchster Fallschirmsprung'}],
+[100,{fr:'Ligne de Kármán : l\'espace !',en:'Kármán line: space!',es:'Línea de Kármán: ¡el espacio!',de:'Kármán-Linie: Weltraum!'}],
+[408,{fr:'Station spatiale internationale',en:'International Space Station',es:'Estación Espacial Internacional',de:'Internationale Raumstation'}],
+[2000,{fr:'Fin de l\'orbite basse',en:'End of low Earth orbit',es:'Fin de la órbita baja',de:'Ende des niedrigen Orbits'}],
+[20200,{fr:'Satellites GPS',en:'GPS satellites',es:'Satélites GPS',de:'GPS-Satelliten'}],
+[35786,{fr:'Orbite géostationnaire',en:'Geostationary orbit',es:'Órbita geoestacionaria',de:'Geostationärer Orbit'}],
+[384400,{fr:'La Lune',en:'The Moon',es:'La Luna',de:'Der Mond'},'moon'],
+[54600000,{fr:'Mars (au plus près)',en:'Mars (closest)',es:'Marte (lo más cerca)',de:'Mars (nächster Punkt)'},'mars'],
+[149600000,{fr:'Le Soleil',en:'The Sun',es:'El Sol',de:'Die Sonne'},'sun'],
+[588000000,{fr:'Jupiter',en:'Jupiter',es:'Júpiter',de:'Jupiter'},'jupiter'],
+[5900000000,{fr:'Pluton',en:'Pluto',es:'Plutón',de:'Pluto'},'pluto'],
+[24000000000,{fr:'Voyager 1, la sonde la plus lointaine',en:'Voyager 1, the farthest probe',es:'Voyager 1',de:'Voyager 1'}]]};
+const BG_STOPS={abyss:[[0,'#5fd0f5'],[30,'#1f9bd8'],[200,'#0b5f9e'],[1000,'#063463'],[4000,'#031a40'],[11000,'#010913'],[12500,'#1c1109'],[35000,'#3a1c0c'],[670000,'#6e2408'],[2890000,'#b83a06'],[5150000,'#f2780f'],[6371000,'#ffd36b'],[12742000,'#1a0d06']],
+space:[[0,'#8fd3ff'],[3,'#5fb2f0'],[11,'#2f78cc'],[40,'#143270'],[100,'#070c2a'],[1000,'#03040f'],[1e12,'#000000']]};
+const hex2rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+function colorAt(stops,d){if(d<=stops[0][0])return stops[0][1];for(let i=1;i<stops.length;i++)if(d<=stops[i][0]){const[a0,c0]=stops[i-1],[a1,c1]=stops[i];const u=(Math.log10(1+d)-Math.log10(1+a0))/(Math.log10(1+a1)-Math.log10(1+a0));const A=hex2rgb(c0),B=hex2rgb(c1);return `rgb(${A.map((v,k)=>Math.round(v+(B[k]-v)*u)).join(',')})`}return stops[stops.length-1][1]}
+const DIVER_SVG=`<svg class="diver" viewBox="0 0 220 380" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="dvSuit" x1="0" x2="1"><stop offset="0" stop-color="#07090d"/><stop offset=".45" stop-color="#2b313d"/><stop offset=".6" stop-color="#1b2029"/><stop offset="1" stop-color="#06080b"/></linearGradient>
+<linearGradient id="dvTank" x1="0" x2="1"><stop offset="0" stop-color="#8a6205"/><stop offset=".4" stop-color="#ffd84a"/><stop offset=".55" stop-color="#ffe98a"/><stop offset="1" stop-color="#8f6606"/></linearGradient>
+<linearGradient id="dvFin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f2a6e"/><stop offset=".6" stop-color="#1d6fd6"/><stop offset="1" stop-color="#5fd0ff" stop-opacity=".75"/></linearGradient>
+<radialGradient id="dvGlass" cx=".32" cy=".28" r=".85"><stop offset="0" stop-color="#f0fbff"/><stop offset=".3" stop-color="#7fd6f2"/><stop offset=".75" stop-color="#14608a"/><stop offset="1" stop-color="#062a40"/></radialGradient>
+<linearGradient id="dvBcd" x1="0" x2="1"><stop offset="0" stop-color="#1f2733"/><stop offset=".5" stop-color="#4a5566"/><stop offset="1" stop-color="#1a212b"/></linearGradient>
+<linearGradient id="dvSkin" x1="0" x2="1"><stop offset="0" stop-color="#c98b67"/><stop offset="1" stop-color="#e8b08c"/></linearGradient>
+</defs>
+<rect x="76" y="66" width="68" height="160" rx="32" fill="url(#dvTank)"/>
+<rect x="80" y="78" width="60" height="6" fill="#00000030"/><rect x="80" y="200" width="60" height="6" fill="#00000030"/>
+<rect x="99" y="48" width="22" height="24" rx="5" fill="#6b7280"/><circle cx="110" cy="46" r="7" fill="#9ca3af"/>
+<path d="M121 56 C150 40 160 70 138 86" stroke="#111827" stroke-width="6" fill="none" stroke-linecap="round"/>
+<g class="leg l"><path d="M93 206 C88 236 84 262 82 296" stroke="url(#dvSuit)" stroke-width="27" stroke-linecap="round" fill="none"/><path d="M90 250 C88 262 86 272 85 282" stroke="#1d6fd6" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M64 290 Q82 284 100 290 L112 362 Q84 376 52 362 Z" fill="url(#dvFin)"/><path d="M70 300 L66 356 M82 298 L82 362 M94 300 L98 356" stroke="#ffffff30" stroke-width="2"/></g>
+<g class="leg r"><path d="M127 206 C132 236 136 262 138 296" stroke="url(#dvSuit)" stroke-width="27" stroke-linecap="round" fill="none"/><path d="M130 250 C132 262 134 272 135 282" stroke="#1d6fd6" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M120 290 Q138 284 156 290 L168 362 Q136 376 108 362 Z" fill="url(#dvFin)"/><path d="M126 300 L122 356 M138 298 L138 362 M150 300 L154 356" stroke="#ffffff30" stroke-width="2"/></g>
+<path d="M66 92 Q110 70 154 92 L160 206 Q110 230 60 206 Z" fill="url(#dvSuit)"/>
+<path d="M68 112 L63 200" stroke="#1d6fd6" stroke-width="5" stroke-linecap="round"/><path d="M152 112 L157 200" stroke="#1d6fd6" stroke-width="5" stroke-linecap="round"/>
+<path d="M72 102 Q110 88 148 102 L150 176 Q110 190 70 176 Z" fill="url(#dvBcd)"/>
+<path d="M82 104 L96 176 M138 104 L124 176" stroke="#0b0f15" stroke-width="7"/>
+<rect x="74" y="146" width="72" height="9" rx="3" fill="#0b0f15"/><rect x="102" y="143" width="16" height="15" rx="3" fill="#cbd5e1"/>
+<circle cx="138" cy="122" r="7" fill="#e5e7eb" stroke="#111" stroke-width="2"/><path d="M138 122 L141 118" stroke="#ef4444" stroke-width="2"/>
+<g class="arm l"><path d="M72 104 C48 132 44 160 50 190" stroke="url(#dvSuit)" stroke-width="21" stroke-linecap="round" fill="none"/><ellipse cx="50" cy="196" rx="11" ry="13" fill="#0b0f15"/><rect x="40" y="150" width="20" height="16" rx="4" fill="#111827" stroke="#38bdf8" stroke-width="2"/></g>
+<g class="arm r"><path d="M148 104 C172 132 176 160 170 190" stroke="url(#dvSuit)" stroke-width="21" stroke-linecap="round" fill="none"/><ellipse cx="170" cy="196" rx="11" ry="13" fill="#0b0f15"/></g>
+<circle cx="110" cy="40" r="31" fill="#0b0f15"/>
+<path d="M92 58 Q110 70 128 58 L126 66 Q110 76 94 66 Z" fill="url(#dvSkin)"/>
+<rect x="86" y="24" width="48" height="28" rx="11" fill="url(#dvGlass)" stroke="#0f172a" stroke-width="5"/>
+<path d="M93 31 Q100 27 108 29" stroke="#fff" stroke-opacity=".85" stroke-width="3" fill="none" stroke-linecap="round"/>
+<path d="M80 38 Q110 8 140 38" stroke="#1d6fd6" stroke-width="5" fill="none"/>
+<rect x="101" y="60" width="18" height="12" rx="5" fill="#374151"/><circle cx="110" cy="66" r="3" fill="#9ca3af"/>
+<rect x="103" y="6" width="14" height="10" rx="3" fill="#1f2937"/><circle class="lamp" cx="110" cy="9" r="5" fill="#fff4b0"/>
+</svg>`;
+const ROCKET_SVG=`<svg class="rocket" viewBox="0 0 160 420" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="rkBody" x1="0" x2="1"><stop offset="0" stop-color="#8d97a6"/><stop offset=".32" stop-color="#ffffff"/><stop offset=".62" stop-color="#e2e6eb"/><stop offset="1" stop-color="#7c8696"/></linearGradient>
+<linearGradient id="rkRed" x1="0" x2="1"><stop offset="0" stop-color="#7f1414"/><stop offset=".45" stop-color="#f04545"/><stop offset="1" stop-color="#6d1010"/></linearGradient>
+<radialGradient id="rkWin" cx=".35" cy=".32" r=".8"><stop offset="0" stop-color="#eaf8ff"/><stop offset=".35" stop-color="#4cc3f5"/><stop offset="1" stop-color="#0a3d5e"/></radialGradient>
+<linearGradient id="rkFlame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/><stop offset=".2" stop-color="#ffe14d"/><stop offset=".55" stop-color="#ff8a00"/><stop offset="1" stop-color="#ff2d00" stop-opacity="0"/></linearGradient>
+<linearGradient id="rkMetal" x1="0" x2="1"><stop offset="0" stop-color="#2b3038"/><stop offset=".5" stop-color="#6b7280"/><stop offset="1" stop-color="#22262d"/></linearGradient>
+</defs>
+<g class="flamebox"><g class="flame"><path d="M56 306 Q80 430 104 306 Z" fill="url(#rkFlame)"/><path d="M66 306 Q80 380 94 306 Z" fill="#fffdf2" opacity=".9"/></g></g>
+<g class="rbody">
+<path d="M50 222 C30 250 18 282 16 304 L54 286 Z" fill="url(#rkRed)"/>
+<path d="M110 222 C130 250 142 282 144 304 L106 286 Z" fill="url(#rkRed)"/>
+<path d="M80 18 C114 58 118 132 114 292 L46 292 C42 132 46 58 80 18 Z" fill="url(#rkBody)"/>
+<path d="M80 18 C97 38 106 62 109 88 L51 88 C54 62 63 38 80 18 Z" fill="url(#rkRed)"/>
+<rect x="49" y="88" width="62" height="7" fill="#9ca3af"/>
+<rect x="46" y="236" width="68" height="12" fill="#1f2937" opacity=".55"/>
+<path d="M54 110 L54 280" stroke="#00000018" stroke-width="3"/><path d="M106 110 L106 280" stroke="#ffffff55" stroke-width="2"/>
+<circle cx="80" cy="146" r="21" fill="url(#rkMetal)"/><circle cx="80" cy="146" r="16" fill="url(#rkWin)"/>
+<path d="M71 139 Q78 133 86 135" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>
+<text x="80" y="214" font-family="Arial Black,Arial" font-weight="900" font-size="15" fill="#1f2937" text-anchor="middle" transform="rotate(-90 80 214)">G3</text>
+<path d="M76 236 L84 236 L87 304 L73 304 Z" fill="url(#rkRed)"/>
+<path d="M56 292 L104 292 L98 310 L62 310 Z" fill="url(#rkMetal)"/>
+</g></svg>`;
+const qn=s=>norm(s).replace(/['’\-]/g,' ').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim().replace(/(.{3,})s$/,'$1');
+function parseQ(s){const[q,a]=s.split('|');const items=a.split(',');return{q,ans:items.map(x=>x.split('/').map(qn)),disp:items.map(x=>x.split('/')[0])}}
+/* Moteur de scène : caméra qui suit le héros sur une échelle logarithmique infinie */
+function makeScene(stage,mode,onFrame){
+  const cv=stage.querySelector('canvas'),ctx=cv.getContext('2d'),hero=stage.querySelector('.herowrap');
+  let W=1,H=1,dpr=Math.min(2,window.devicePixelRatio||1),raf=0,alive=true,last=performance.now(),tm=0;
+  const resize=()=>{const r=stage.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)};resize();
+  let ro=null;try{ro=new ResizeObserver(resize);ro.observe(stage)}catch(e){window.addEventListener('resize',resize)}
+  const F=d=>Math.log10(1+Math.max(0,d)/2),invF=f=>2*(Math.pow(10,f)-1);
+  const PX=()=>H*0.75; /* pixels par décade */
+  let camF=0,targetF=0,vel=0;
+  const ys=d=>mode==='abyss'?H/2+(F(d)-camF)*PX():H/2-(F(d)-camF)*PX();
+  const R=Math.random;
+  const parts=Array.from({length:140},()=>({x:R(),y:R(),z:.25+R()*.75,s:R()*1.8+.4,tw:R()*6}));
+  const bubbles=[],smoke=[],critters=[];
+  const clouds=Array.from({length:26},()=>({alt:.4+R()*10,x:R(),w:.15+R()*.3,h:.04+R()*.05}));
+  const sats=Array.from({length:8},()=>({alt:300+R()*36000,x:R(),sp:(R()-.5)*.02}));
+  let spawnB=0,spawnC=0;
+  const heroRect=()=>{const r=hero.getBoundingClientRect(),q=stage.getBoundingClientRect();return{x:r.left-q.left,y:r.top-q.top,w:r.width,h:r.height}};
+  function drawBody(kind,x,y,r){
+    ctx.save();
+    if(kind==='moon'){const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.1,x,y,r);g.addColorStop(0,'#f4f4f0');g.addColorStop(1,'#8d8d88');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.fillStyle='rgba(90,90,85,.35)';[[.3,.2,.18],[-.35,-.1,.12],[.05,-.45,.1],[-.1,.4,.14],[.45,-.3,.07]].forEach(([a,b,c])=>{ctx.beginPath();ctx.arc(x+a*r,y+b*r,c*r,0,7);ctx.fill()})}
+    else if(kind==='sun'){const g=ctx.createRadialGradient(x,y,r*.2,x,y,r*2.2);g.addColorStop(0,'#fffbe0');g.addColorStop(.35,'#ffd23f');g.addColorStop(.5,'rgba(255,140,0,.6)');g.addColorStop(1,'rgba(255,90,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.2,0,7);ctx.fill()}
+    else if(kind==='jupiter'){ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.clip();const cols=['#d9b38c','#b5835a','#f1dcc0','#a8704a','#e8c9a0','#c4926a'];for(let i=0;i<12;i++){ctx.fillStyle=cols[i%cols.length];ctx.fillRect(x-r,y-r+i*r/6,2*r,r/6+1)}ctx.fillStyle='#b5452a';ctx.beginPath();ctx.ellipse(x+r*.3,y+r*.25,r*.18,r*.1,0,0,7);ctx.fill()}
+    else{const c=kind==='mars'?['#ff9a6b','#a33a14']:['#e9d6c4','#8a7563'];const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.1,x,y,r);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+    ctx.restore();
+  }
+  function frame(now){
+    if(!alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;
+    const prev=camF;camF+=(targetF-camF)*Math.min(1,dt*1.6);vel=(camF-prev)/Math.max(dt,1e-3);
+    const depth=invF(camF),moving=Math.abs(targetF-camF)>.002;
+    hero.classList.toggle('boost',moving);
+    const halfF=(H/2)/PX();
+    const top=mode==='abyss'?invF(Math.max(0,camF-halfF)):invF(camF+halfF),bot=mode==='abyss'?invF(camF+halfF):invF(Math.max(0,camF-halfF));
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,colorAt(BG_STOPS[mode],top));g.addColorStop(.5,colorAt(BG_STOPS[mode],depth));g.addColorStop(1,colorAt(BG_STOPS[mode],bot));
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    const y0=ys(0),mv=vel*PX()*dt;
+    if(mode==='abyss'){
+      if(y0>0){const sk=ctx.createLinearGradient(0,0,0,y0);sk.addColorStop(0,'#bfe6ff');sk.addColorStop(1,'#e9f7ff');ctx.fillStyle=sk;ctx.fillRect(0,0,W,y0);
+        ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(W*.18,Math.min(y0-40,60),26,0,7);ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.moveTo(0,y0);for(let x=0;x<=W;x+=12)ctx.lineTo(x,y0+Math.sin(x/38+tm*2)*5+Math.sin(x/17-tm*3)*2);ctx.lineTo(W,y0+14);ctx.lineTo(0,y0+14);ctx.fill();}
+      if(depth<700){const al=(1-depth/700)*.2;ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<6;i++){const x=W*(i/6)+Math.sin(tm*.3+i)*40;ctx.fillStyle=`rgba(200,240,255,${al*(.5+.5*Math.sin(tm*.7+i*1.7))})`;ctx.beginPath();ctx.moveTo(x-20,Math.max(0,y0));ctx.lineTo(x+30,Math.max(0,y0));ctx.lineTo(x+160,H);ctx.lineTo(x+40,H);ctx.fill()}ctx.restore()}
+      if(depth>12000){ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<5;i++){const gx=W*((i*.23+tm*.01)%1),gy=H*((i*.37)%1);const rg=ctx.createRadialGradient(gx,gy,0,gx,gy,140);rg.addColorStop(0,`rgba(255,${120+i*20},40,.18)`);rg.addColorStop(1,'rgba(255,80,0,0)');ctx.fillStyle=rg;ctx.fillRect(gx-140,gy-140,280,280)}ctx.restore()}
+    }else{
+      if(y0<H){ctx.fillStyle='#2f7d3c';ctx.fillRect(0,y0,W,H-y0);ctx.fillStyle='#3f9a4d';ctx.fillRect(0,y0,W,8);ctx.fillStyle='#6b7280';ctx.fillRect(W*.55,y0-14,W*.2,14);ctx.fillStyle='#4b5563';ctx.fillRect(W*.7,y0-120,10,120)}
+      const starA=Math.max(0,Math.min(1,(depth-15)/120));
+      if(depth>60){const R2=W*2.2/(1+depth/6000),cy=H+R2*.82-Math.min(H*.3,depth/40);if(R2>20&&cy-R2<H){const eg=ctx.createRadialGradient(W*.5,cy,R2*.9,W*.5,cy,R2*1.08);eg.addColorStop(0,'rgba(80,170,255,.0)');eg.addColorStop(.85,'rgba(120,200,255,.55)');eg.addColorStop(1,'rgba(120,200,255,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(W*.5,cy,R2*1.08,0,7);ctx.fill();const earth=ctx.createRadialGradient(W*.4,cy-R2*.5,R2*.1,W*.5,cy,R2);earth.addColorStop(0,'#4fa3e8');earth.addColorStop(.6,'#1f5fae');earth.addColorStop(1,'#0b2650');ctx.fillStyle=earth;ctx.beginPath();ctx.arc(W*.5,cy,R2,0,7);ctx.fill();ctx.fillStyle='rgba(70,140,70,.7)';ctx.beginPath();ctx.ellipse(W*.42,cy-R2*.82,R2*.18,R2*.06,-.3,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(W*.6,cy-R2*.9,R2*.22,R2*.03,.2,0,7);ctx.fill()}}
+      if(starA>0)parts.forEach(p=>{ctx.fillStyle=`rgba(255,255,255,${starA*p.z*(.55+.45*Math.sin(tm*2+p.tw))})`;ctx.fillRect(p.x*W,p.y*H,p.s*p.z,p.s*p.z)});
+      clouds.forEach(c=>{const y=ys(c.alt);if(y<-80||y>H+80)return;ctx.fillStyle='rgba(255,255,255,.75)';const x=((c.x+tm*.004)%1.3-.15)*W;for(let k=0;k<4;k++){ctx.beginPath();ctx.ellipse(x+k*W*c.w*.25,y+Math.sin(k)*8,W*c.w*.22,W*c.h*.9,0,0,7);ctx.fill()}});
+      sats.forEach(sa=>{const y=ys(sa.alt);if(y<-20||y>H+20)return;const x=((sa.x+tm*sa.sp)%1+1)%1*W;ctx.fillStyle='#cbd5e1';ctx.fillRect(x-4,y-3,8,6);ctx.fillStyle='#3b82f6';ctx.fillRect(x-16,y-2,10,4);ctx.fillRect(x+6,y-2,10,4)});
+    }
+    /* jalons + corps célestes */
+    MILESTONES[mode].forEach(([d,l,body])=>{const y=ys(d);if(body){const r=Math.min(W*.22,140);if(y>-r*2&&y<H+r*2)drawBody(body,W*.24,y,r)}if(y<-30||y>H+30)return;
+      ctx.save();ctx.setLineDash([6,8]);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);
+      const txt=`${fmt(d)} ${mode==='abyss'?'m':'km'} · ${L(l)}`;ctx.font='600 13px "DM Sans",sans-serif';const tw=ctx.measureText(txt).width;ctx.fillStyle='rgba(0,0,0,.45)';ctx.beginPath();ctx.roundRect?ctx.roundRect(14,y-24,tw+18,22,11):ctx.rect(14,y-24,tw+18,22);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(txt,23,y-8);ctx.restore()});
+    /* règle graduée */
+    ctx.save();ctx.fillStyle='rgba(255,255,255,.55)';ctx.font='11px "DM Sans",sans-serif';ctx.textAlign='right';
+    const lo=Math.min(top,bot),hi=Math.max(top,bot);for(let e=0;e<=11;e++)[1,2,5].forEach(m=>{const d=m*Math.pow(10,e);if(d<lo||d>hi)return;const y=ys(d);ctx.fillRect(W-10,y,10,1);ctx.fillText(fmt(d),W-14,y+4)});ctx.restore();
+    /* particules : neige marine / poussière */
+    if(mode==='abyss')parts.forEach(p=>{p.y-=(mv/H)*p.z*1.4+.00012*p.z;p.x+=Math.sin(tm+p.tw)*.0002;if(p.y<0)p.y+=1;if(p.y>1)p.y-=1;ctx.fillStyle=depth>12000?`rgba(255,${150+p.z*80|0},80,${.4*p.z})`:`rgba(255,255,255,${.35*p.z})`;ctx.beginPath();ctx.arc(p.x*W,p.y*H,p.s*p.z,0,7);ctx.fill()});
+    else parts.forEach(p=>{if(depth<20)return;p.y+=(mv/H)*p.z*1.4;if(p.y<0)p.y+=1;if(p.y>1)p.y-=1});
+    /* traits de vitesse */
+    if(Math.abs(vel)>.25){ctx.save();ctx.strokeStyle=`rgba(255,255,255,${Math.min(.35,Math.abs(vel)*.12)})`;ctx.lineWidth=1.5;for(let i=0;i<14;i++){const x=(i*97.3+tm*13)%W,y=((i*53.1+tm*900)%(H+200))-100;const len=40+Math.abs(vel)*60;ctx.beginPath();if(mode==='abyss'){ctx.moveTo(x,H-y);ctx.lineTo(x,H-y-len)}else{ctx.moveTo(x,y);ctx.lineTo(x,y+len)}ctx.stroke()}ctx.restore()}
+    /* créatures */
+    spawnC-=dt;if(mode==='abyss'&&spawnC<=0&&depth<12000){spawnC=1.2+R()*2.5;const dir=R()<.5?1:-1;const kind=depth<350?'fish':depth<2500?(R()<.6?'jelly':'fish'):'glow';const n=kind==='fish'?3+(R()*6|0):1;const yy=H*(.15+R()*.7);for(let k=0;k<n;k++)critters.push({kind,x:dir>0?-60-k*28:W+60+k*28,y:yy+(R()-.5)*60,dir,sp:(30+R()*50)*(kind==='jelly'?.4:1),s:kind==='fish'?8+R()*8:14+R()*16,ph:R()*6,life:0})}
+    for(let i=critters.length-1;i>=0;i--){const c=critters[i];c.life+=dt;c.x+=c.dir*c.sp*dt;c.y-=mv*.6;if(c.x<-200||c.x>W+200||c.y<-200||c.y>H+200){critters.splice(i,1);continue}
+      ctx.save();ctx.translate(c.x,c.y+Math.sin(tm*2+c.ph)*6);ctx.scale(c.dir,1);
+      if(c.kind==='fish'){ctx.fillStyle=depth<150?'rgba(255,180,60,.9)':'rgba(20,40,70,.85)';ctx.beginPath();ctx.ellipse(0,0,c.s,c.s*.45,0,0,7);ctx.fill();ctx.beginPath();const tf=Math.sin(tm*12+c.ph)*.3;ctx.moveTo(-c.s*.8,0);ctx.lineTo(-c.s*1.6,-c.s*(.5+tf));ctx.lineTo(-c.s*1.6,c.s*(.5-tf));ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(c.s*.55,-c.s*.1,c.s*.1,0,7);ctx.fill()}
+      else if(c.kind==='jelly'){ctx.globalCompositeOperation='lighter';const pu=1+Math.sin(tm*3+c.ph)*.12;const jg=ctx.createRadialGradient(0,-c.s*.2,0,0,0,c.s*1.4);jg.addColorStop(0,'rgba(255,150,230,.6)');jg.addColorStop(1,'rgba(160,80,255,0)');ctx.fillStyle=jg;ctx.beginPath();ctx.ellipse(0,0,c.s*pu,c.s*.7/pu,0,Math.PI,0);ctx.fill();ctx.strokeStyle='rgba(255,170,240,.45)';ctx.lineWidth=1.5;for(let k=-2;k<=2;k++){ctx.beginPath();ctx.moveTo(k*c.s*.3,0);ctx.quadraticCurveTo(k*c.s*.3+Math.sin(tm*2+k)*8,c.s,k*c.s*.3,c.s*2);ctx.stroke()}}
+      else{ctx.globalCompositeOperation='lighter';const lg=ctx.createRadialGradient(c.s,-c.s*.8,0,c.s,-c.s*.8,c.s*1.6);lg.addColorStop(0,'rgba(180,255,240,.95)');lg.addColorStop(1,'rgba(80,255,220,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.arc(c.s,-c.s*.8,c.s*1.6,0,7);ctx.fill();ctx.globalCompositeOperation='source-over';ctx.fillStyle='rgba(10,14,22,.9)';ctx.beginPath();ctx.ellipse(0,0,c.s*1.2,c.s*.8,0,0,7);ctx.fill();ctx.strokeStyle='rgba(120,140,160,.5)';ctx.beginPath();ctx.moveTo(c.s*.4,-c.s*.6);ctx.quadraticCurveTo(c.s*.9,-c.s*1.4,c.s,-c.s*.8);ctx.stroke()}
+      ctx.restore()}
+    /* bulles / fumée depuis le héros */
+    const hr=heroRect();spawnB-=dt;
+    if(mode==='abyss'){
+      if(depth>120){const lx=hr.x+hr.w*.5,ly=hr.y+hr.h*.92;const lg=ctx.createRadialGradient(lx,ly,0,lx,ly+200,300);const la=Math.min(.35,(depth-120)/2500);lg.addColorStop(0,`rgba(255,250,200,${la})`);lg.addColorStop(1,'rgba(255,250,200,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx-170,H);ctx.lineTo(lx+170,H);ctx.fill()}
+      if(spawnB<=0){spawnB=.18+R()*.35;for(let k=0;k<(1+R()*3|0);k++)bubbles.push({x:hr.x+hr.w*.5+(R()-.5)*14,y:hr.y+hr.h*.82,r:2+R()*5,ph:R()*6,v:40+R()*40})}
+      for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.y-=b.v*dt+mv;b.x+=Math.sin(tm*4+b.ph)*.6;if(b.y<-20){bubbles.splice(i,1);continue}ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.25)';ctx.beginPath();ctx.arc(b.x-b.r*.35,b.y-b.r*.35,b.r*.3,0,7);ctx.fill()}
+    }else{
+      if(spawnB<=0){spawnB=moving?.02:.09;smoke.push({x:hr.x+hr.w*.5+(R()-.5)*10,y:hr.y+hr.h*.9,r:6+R()*8,vx:(R()-.5)*30,vy:moving?160+R()*120:60+R()*40,a:.5})}
+      for(let i=smoke.length-1;i>=0;i--){const m=smoke[i];m.x+=m.vx*dt;m.y+=m.vy*dt;m.r+=dt*28;m.a-=dt*.45;if(m.a<=0||m.y>H+60){smoke.splice(i,1);continue}ctx.fillStyle=depth>60?`rgba(255,190,120,${m.a*.5})`:`rgba(235,235,240,${m.a})`;ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,7);ctx.fill()}
+    }
+    if(onFrame)onFrame(depth,vel);
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  return{setTarget(d){targetF=F(d)},jump(d){camF=targetF=F(d)},destroy(){alive=false;cancelAnimationFrame(raf);if(ro)ro.disconnect()}};
+}
+function qaGame(root,mode){
+  const c=cl(),N=8,unit=mode==='abyss'?'m':'km',bank=QBANK[c].map(parseQ);
+  let qs=shuffle(bank),qi=0,round=0,total=0,shown=-1;
+  root.innerHTML=`${cnote()}<p class="intro">${mode==='abyss'?t('aby_intro'):t('spa_intro')}</p>
+  <div class="stage ${mode}" id="stage"><canvas></canvas><div class="herowrap"><div class="herobob">${mode==='abyss'?DIVER_SVG:ROCKET_SVG}</div></div>
+  <div class="hud-round" id="hr"></div><div class="hud"><div class="hud-n" id="hudn">0 ${unit}</div><div class="hud-l">${mode==='abyss'?t('aby_total'):t('spa_total')}</div><div class="hud-next" id="hudnext"></div></div>
+  <div class="qpanel" id="qp"></div></div>`;
+  const scene=makeScene($('#stage'),mode,(d)=>{const v=Math.round(d);if(v!==shown){shown=v;const e=$('#hudn');if(e)e.textContent=(mode==='abyss'&&v>0?'−':'')+fmt(v)+' '+unit}});
+  cleanups.push(()=>scene.destroy());
+  const nextMs=()=>{const m=MILESTONES[mode].find(([d])=>d>total);const e=$('#hudnext');if(e)e.innerHTML=m?`${t('qa_nextms')} : ${esc(L(m[1]))} · ${fmt(m[0])} ${unit}`:'∞'};
+  const mult=()=>round>N?Math.pow(2,Math.floor((round-N-1)/4)+1):1;
+  ask();
+  function ask(){
+    if(qi>=qs.length){qs=shuffle(bank);qi=0}const Q=qs[qi++];round++;let tries=3,busy=false;
+    $('#hr').textContent=round>N?`${t('round')} ${round} · ∞ · ×${mult()}`:`${t('round')} ${round}/${N}`;nextMs();
+    $('#qp').innerHTML=`<div class="qq">${esc(Q.q)} ?</div><form id="f" class="inrow"><input id="w" placeholder="${t('qa_ph')}" autocomplete="off" autocapitalize="off"><button class="primary">${t('validate')}</button></form><div class="msg" id="msg"></div><div id="res"><button id="sk">${t('qa_skip')}</button></div>`;
+    const inp=$('#w');inp.focus({preventScroll:true});
+    const finish=(rar,label,ai,idx)=>{
+      inp.disabled=true;$('#f').querySelector('button').disabled=true;
+      const base=rar==null?0:Math.round(mode==='abyss'?30+1370*Math.pow(rar,1.2):50+4950*Math.pow(1-rar,1.2));const gain=base*mult();total+=gain;scene.setTarget(total);nextMs();
+      const endOfSet=round===N;
+      $('#res').innerHTML=`<div class="result">${rar==null?`<div>${t('qa_zero')}</div>`:`<div class="gain" style="color:${mode==='abyss'?'#7dd3fc':'#c4b5fd'}">${mode==='abyss'?'⬇️':'⬆️'} +${fmt(gain)} ${unit}${mult()>1?` <small style="font-size:.9rem;opacity:.8">(×${mult()})</small>`:''}</div><div>« ${esc(label)} » ${idx!=null?'· '+t('qa_rank',{r:idx+1,n:Q.disp.length}):''}</div>${ai?`<div class="muted">${t('qa_ai')}</div>`:''}`}
+      <div style="margin-top:8px"><b>${t('qa_top')}</b><div class="taglist">${Q.disp.slice(0,5).map(x=>`<span>${esc(x)}</span>`).join('')}</div></div><div style="margin-top:8px"><b>${t('qa_rare')}</b><div class="taglist">${Q.disp.slice(-5).reverse().map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>
+      ${endOfSet?`<div class="big" style="margin-top:12px">${mode==='abyss'?t('aby_end',{n:fmt(total)}):t('spa_end',{n:fmt(total)})}</div>`:''}
+      <div class="actions"><button class="primary" id="nx">${endOfSet?t('qa_endless'):t('next')+' →'}</button>${endOfSet?`<button id="re">🔄 ${t('restart')}</button>`:''}</div></div>`;
+      if(gain>0)fx.toast(`${mode==='abyss'?'🤿':'🚀'} +${fmt(gain)} ${unit}`);
+      if(endOfSet)fx.confetti();
+      const crossed=MILESTONES[mode].filter(([d])=>d<=total&&d>total-gain);if(crossed.length)setTimeout(()=>fx.toast(`🏁 ${esc(L(crossed[crossed.length-1][1]))}`),900);
+      $('#nx').onclick=ask;const re=$('#re');if(re)re.onclick=()=>{qs=shuffle(bank);qi=0;round=0;total=0;scene.setTarget(0);ask()};
+    };
+    $('#sk').onclick=()=>finish(null);
+    $('#f').onsubmit=async e=>{e.preventDefault();if(busy||inp.disabled)return;const v=inp.value.trim();if(!v)return;const k=qn(v);
+      const idx=Q.ans.findIndex(a=>a.includes(k));
+      if(idx>=0)return finish(idx/(Q.ans.length-1),Q.disp[idx],false,idx);
+      if(SAMPLE){busy=true;$('#msg').textContent=t('qa_check');
+        const r=await askClaude(`Game like "Pointless"/"Family Feud" in ${c==='fr'?'French':'English'}. Question: "${Q.q}". A player answered: "${v}". Reply ONLY with JSON {"valid":boolean,"popularity":number}. valid=true only if it is a correct answer to the question. popularity 0-100 = how often a random group of 100 ${c==='fr'?'French':'English'}-speaking people would give this answer (the most obvious answers ~90-100, rare but correct answers ~1-10).`);
+        busy=false;if(!root.isConnected)return;$('#msg').textContent='';
+        if(r&&r.valid&&typeof r.popularity==='number'){const pop=Math.max(0,Math.min(100,r.popularity));return finish(1-pop/100,v,true,null)}}
+      tries--;inp.value='';fx.shake(inp);if(tries<=0)return finish(null);$('#msg').textContent=t('qa_unknown',{n:tries});};
+  }
+}
+GAME_IMPL.abysse=root=>qaGame(root,'abyss');
+GAME_IMPL.space=root=>qaGame(root,'space');
+
+/* =====================================================================
+   10. MOT MYSTÈRE — taille 5 à 8, 3 difficultés
+   ===================================================================== */
+const MOTUS={fr:{
+5:{c:'plage livre table chien fleur nuage pomme sucre train verre monde porte route piano herbe jaune lampe neige ville sable tigre crabe radio stylo balle carte fruit lapin robot tasse pluie vache sapin',h:'fjord ozone sbire gnome pixel joker kebab yacht abime azote'},
+6:{c:'maison jardin soleil enfant cheval poulet orange voyage oiseau banane cerise chaise crayon dragon bateau cadeau gateau bougie marron violet pirate tomate fourmi',h:'zephyr quartz sphinx jockey glyphe whisky lichen abysse pygmee zigzag'},
+7:{c:'musique fromage guitare voiture chateau fenetre cuisine lumiere planete chemise journal biscuit poisson lunette baleine cerveau village',h:'quetzal jacuzzi gymnase kumquat bizarre axolotl cyclope pharynx'},
+8:{c:'montagne elephant papillon chocolat dimanche vacances escargot pasteque aquarium cartable tracteur sandwich toboggan pyramide',h:'zeppelin zodiaque byzantin quadrige sphaigne gymkhana'}},
+en:{
+5:{c:'apple beach chair dream house light music night plant river smile stone table train water zebra cloud bread green heart tiger pizza ghost robot candy storm juice horse crown snake',h:'fjord nymph glyph crypt psalm kiosk quirk jazzy pixie wryly'},
+6:{c:'garden summer orange castle rabbit pencil dragon window monkey cookie planet guitar flower friend bridge winter rocket banana pirate island',h:'zephyr quartz sphinx jockey rhythm oxygen frenzy quiver zealot'},
+7:{c:'chicken kitchen picture rainbow blanket teacher dolphin holiday machine monster penguin pumpkin science weather library',h:'quetzal jacuzzi axolotl kumquat rhubarb cryptic jukebox pharynx'},
+8:{c:'elephant mountain sandwich dinosaur football birthday treasure umbrella computer airplane hospital vacation kangaroo',h:'zeppelin quixotic jacquard sphagnum gymkhana zucchini mnemonic'}}};
+GAME_IMPL.motus=root=>{
+  const c=cl();let cfg=store.get('lv-motus',{len:5,d:'med'}),word,rows,cur,done,kb,fixed,auto,MAXT;
+  setup();
+  function setup(){
+    keyHandler=null;
+    root.innerHTML=`${cnote()}<p class="intro">${t('mot_intro')}</p><div class="panel"><div class="opt"><b>${t('mot_len')}</b><div class="seg">${[5,6,7,8].map(n=>`<button data-l="${n}" class="${cfg.len===n?'on':''}">${n}</button>`).join('')}</div></div>
+    <div class="opt"><b>${t('mot_diff')}</b><div class="seg">${['easy','med','hard'].map(d=>`<button data-d="${d}" class="${cfg.d===d?'on':''}">${t('mot_'+d)}</button>`).join('')}</div><p class="muted" style="margin:8px 0 0">${t('mot_'+cfg.d+'_d')}</p></div><button class="primary" id="go">${t('play')} →</button></div>`;
+    root.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{cfg.len=+b.dataset.l;setup()});
+    root.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{cfg.d=b.dataset.d;setup()});
+    $('#go').onclick=()=>{store.set('lv-motus',cfg);start()};
+  }
+  function start(){
+    const pool=MOTUS[c][cfg.len][cfg.d==='hard'?'h':'c'].split(' ');word=rnd(pool).toUpperCase();rows=[];done=false;kb={};MAXT=cfg.d==='easy'?7:6;
+    fixed={};if(cfg.d!=='hard')fixed[0]=word[0];if(cfg.d==='easy'){const j=1+Math.floor(Math.random()*(cfg.len-1));fixed[j]=word[j]}
+    cur='';auto=new Set();justRow=-1;won=false;autofill();draw('');
+    keyHandler=e=>{if(e.ctrlKey||e.metaKey||e.altKey||e.target.tagName==='INPUT')return;if(e.key==='Enter'){e.preventDefault();press('ENTER')}else if(e.key==='Backspace')press('DEL');else if(/^[a-zA-Z]$/.test(e.key))press(e.key.toUpperCase())};
+  }
+  function autofill(){while(cur.length<cfg.len&&fixed[cur.length]){auto.add(cur.length);cur+=fixed[cur.length]}}
+  function evalRow(g){const n=cfg.len,r=Array(n).fill('b'),cnt={};for(let i=0;i<n;i++){if(g[i]===word[i])r[i]='g';else cnt[word[i]]=(cnt[word[i]]||0)+1}for(let i=0;i<n;i++)if(r[i]!=='g'&&cnt[g[i]]){r[i]='y';cnt[g[i]]--}return r}
+  let justRow=-1,won=false;
+  function press(k){
+    if(done)return;let m='';const n=cfg.len;justRow=-1;
+    if(k==='DEL'){let i=cur.length-1;while(i>=0&&fixed[i])i--;if(i>=0){cur=cur.slice(0,i);auto=new Set([...auto].filter(x=>x<i));autofill()}}
+    else if(k==='ENTER'){if(cur.length<n){m=t('mot_short',{n});setTimeout(()=>fx.shake(root.querySelectorAll('.mrow')[rows.length]),0)}else{const r=evalRow(cur);rows.push({g:cur,r});justRow=rows.length-1;[...cur].forEach((ch,i)=>{const p={g:3,y:2,b:1};if(!kb[ch]||p[r[i]]>p[kb[ch]])kb[ch]=r[i]});
+      if(cur===word){done=true;won=true;m=`<span style="color:var(--good)">${t('mot_win')}</span>`;setTimeout(()=>fx.confetti(),700)}else if(rows.length>=MAXT){done=true;m=t('mot_lose',{w:`<b style="color:var(--accent)">${word}</b>`})}cur='';auto=new Set();autofill()}}
+    else if(cur.length<n){const p=cur.length-1;if(p>=0&&auto.has(p)&&cur[p]===k){auto.delete(p)}else{cur+=k;auto=new Set([...auto].filter(x=>x<cur.length-1));autofill()}}
+    draw(m);
+  }
+  function draw(m){
+    const n=cfg.len;let g='';
+    for(let i=0;i<MAXT;i++){g+=`<div class="mrow ${i===justRow?(won?'reveal win':'reveal'):''}">`;
+      if(i<rows.length)for(let j=0;j<n;j++)g+=`<div class="mc ${rows[i].r[j]}">${rows[i].g[j]}</div>`;
+      else if(i===rows.length&&!done)for(let j=0;j<n;j++)g+=cur[j]?`<div class="mc">${cur[j]}</div>`:`<div class="mc fx">${fixed[j]||'·'}</div>`;
+      else for(let j=0;j<n;j++)g+='<div class="mc"></div>';
+      g+='</div>'}
+    const R=lang==='fr'?['AZERTYUIOP','QSDFGHJKLM','WXCVBN']:['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+    const kbd=R.map((r,ri)=>`<div class="kr">${ri===2?'<button class="k" data-k="ENTER">↵</button>':''}${[...r].map(ch=>`<button class="k ${kb[ch]||''}" data-k="${ch}">${ch}</button>`).join('')}${ri===2?'<button class="k" data-k="DEL">⌫</button>':''}</div>`).join('');
+    root.innerHTML=`<div class="bar"><span>${n} ${t('mot_len').toLowerCase()} · ${t('mot_'+cfg.d)} · ${t('tries')} ${rows.length}/${MAXT}</span><button id="chg" style="padding:4px 12px">${t('mot_change')}</button></div><div class="mgrid">${g}</div><div class="msg center">${m||''}</div>${done?`<div class="actions" style="justify-content:center;margin-bottom:14px"><button class="primary" id="re">🔄 ${t('restart')}</button></div>`:''}<div class="kb">${kbd}</div>`;
+    root.querySelectorAll('.k').forEach(b=>b.onclick=()=>press(b.dataset.k));
+    $('#chg').onclick=setup;if(done)$('#re').onclick=start;
+  }
+};
+
+/* ================= DÉMARRAGE ================= */
+document.documentElement.lang=lang;
+route();
+</script>
+</body>
+</html>
