@@ -1443,26 +1443,28 @@ GAME_IMPL.blind=root=>{
   const fr=lang==='fr';
   const STEPS=[[.1,1000],[.5,800],[1,600],[5,400],[10,250],[15,150],[30,50]];
   const key=x=>norm(x).replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+  const clean=x=>String(x).replace(/\s*[\(\[].*?[\)\]]/g,'').replace(/\s+-\s+.*$/,'').trim();
   const lev=(a,b)=>{const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>{const r=new Array(n+1).fill(0);r[0]=i;return r});for(let j=0;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){const c=a[i-1]===b[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1)}return d[m][n]};
   let ctx=null,cur=null,src=null,raf=0,step=0,over=false,score=0,round=0,bag=[],nextP=null,alive=true;
   cleanups.push(()=>{alive=false;try{src&&src.stop()}catch(e){}cancelAnimationFrame(raf);try{ctx&&ctx.close()}catch(e){}});
   const pick=()=>{if(!bag.length)bag=shuffle(BT_SONGS.map((_,i)=>i));return BT_SONGS[bag.pop()]};
   async function loadSong(entry){
     const [artist,title,...al]=entry.split('|');
-    const d=await dzJsonp('/search?q='+encodeURIComponent(`artist:"${artist}" track:"${title}"`)+'&limit=5');
-    let tr=(d.data||[]).find(x=>x.preview&&key(x.artist.name).includes(key(artist).slice(0,5)))||(d.data||[]).find(x=>x.preview);
-    if(!tr){const d2=await dzJsonp('/search?q='+encodeURIComponent(artist+' '+title)+'&limit=5');tr=(d2.data||[]).find(x=>x.preview)}
+    const ka=key(artist).slice(0,5),kt=key(title).slice(0,6);
+    const d=await dzJsonp('/search?q='+encodeURIComponent(artist+' '+title)+'&limit=10');const L=(d.data||[]).filter(x=>x.preview);
+    let tr=L.find(x=>key(x.artist.name).includes(ka)&&key(x.title).includes(kt))||L.find(x=>key(x.artist.name).includes(ka));
+    if(!tr){const d2=await dzJsonp('/search?q='+encodeURIComponent(`artist:"${artist}" track:"${title}"`)+'&limit=5');tr=(d2.data||[]).find(x=>x.preview)}
     if(!tr)throw new Error('notfound');
     const ab=await (await fetch(tr.preview)).arrayBuffer();
-    return{tr,ab,keys:[title,...al].map(key).filter(Boolean),artist,title};
+    return{tr,ab,keys:[title,...al,clean(tr.title)].map(key).filter(Boolean),artist,title};
   }
-  root.innerHTML=`<p class="intro">${fr?"Reconnais la musique le plus vite possible : 0,1 s, puis 0,5 s, 1 s, 5 s, 10 s, 15 s et 30 s. Une mauvaise réponse (ou « Passer ») débloque l'extrait suivant. Pas trouvé après 30 s ? Perdu !":'Name the song as fast as possible: 0.1 s, then 0.5 s, 1 s, 5 s, 10 s, 15 s and 30 s. A wrong answer (or Skip) unlocks the next clip. Not found after 30 s? You lose!'}</p>
+  root.innerHTML=`<style>.bt-sug{position:absolute;left:0;right:0;top:100%;margin-top:6px;z-index:40;background:#1d1640;border:1px solid rgba(255,255,255,.18);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.45);max-height:340px;overflow-y:auto;padding:4px}.bt-sug[hidden]{display:none}.bt-sug button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;margin:0;background:none;border:0;border-radius:10px;color:#fff;text-align:left;font:inherit;cursor:pointer;box-shadow:none;transform:none;min-height:0}.bt-sug button img{width:38px;height:38px;border-radius:7px;flex:none;object-fit:cover}.bt-sug button.on,.bt-sug button:hover{background:rgba(255,79,163,.28)}.bt-sug small{opacity:.7;display:block;font-size:.8em}</style><p class="intro">${fr?"Reconnais la musique le plus vite possible : 0,1 s, puis 0,5 s, 1 s, 5 s, 10 s, 15 s et 30 s. Une mauvaise réponse (ou « Passer ») débloque l'extrait suivant. Pas trouvé après 30 s ? Perdu !":'Name the song as fast as possible: 0.1 s, then 0.5 s, 1 s, 5 s, 10 s, 15 s and 30 s. A wrong answer (or Skip) unlocks the next clip. Not found after 30 s? You lose!'}</p>
   <div class="bt-stage">
    <div class="bar" style="background:rgba(0,0,0,.25)"><span>🎵 ${fr?'Musique':'Song'} <b id="rd">1</b></span><span>${t('score')} : <b id="sc">0</b></span></div>
    <canvas id="viz"></canvas>
    <div class="bt-steps" style="grid-template-columns:repeat(7,1fr)">${STEPS.map((x,i)=>`<div class="bt-step" data-i="${i}">${String(x[0]).replace('.',fr?',':'.')} s<span class="pt">${x[1]}</span></div>`).join('')}</div>
    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><button class="bt-play" id="pl">▶</button>
-   <div style="flex:1;min-width:220px"><form id="f" class="inrow"><input id="w" placeholder="${fr?'Titre de la musique…':'Song title…'}" autocomplete="off"><button class="primary">${t('validate')}</button></form><div class="msg" id="msg"></div></div></div>
+   <div style="flex:1;min-width:220px"><form id="f" class="inrow" style="position:relative"><input id="w" placeholder="${fr?'Tape le titre… (suggestions)':'Type the title… (suggestions)'}" autocomplete="off"><button class="primary">${t('validate')}</button><div class="bt-sug" id="sug" hidden></div></form><div class="msg" id="msg"></div></div></div>
    <div class="actions" id="act"><button id="sk">⏭️ ${fr?'Passer (extrait plus long)':'Skip (longer clip)'}</button></div>
    <div id="rv"></div><div class="bt-credit">${fr?'Extraits officiels fournis par Deezer':'Official previews provided by Deezer'}</div></div>`;
   const cv=$('#viz'),c2=cv.getContext('2d');
@@ -1488,7 +1490,7 @@ GAME_IMPL.blind=root=>{
     nextP=loadSong(pick());nextP.catch(()=>{});
   }
   function skip(){if(over||!cur)return;if(step>=STEPS.length-1){lose();return}step++;setSteps();play(STEPS[step][0])}
-  function reveal(win){over=true;setSteps();$('#w').disabled=true;const pts=win?STEPS[step][1]:0;score+=pts;$('#sc').textContent=score;
+  function reveal(win){over=true;$('#sug').hidden=true;setSteps();$('#w').disabled=true;const pts=win?STEPS[step][1]:0;score+=pts;$('#sc').textContent=score;
     const tr=cur.tr;if(win){fx.confetti();fx.toast(`🎉 +${pts}`)}
     $('#rv').innerHTML=`<div class="bt-reveal"><img src="${esc(tr.album.cover_medium)}" alt=""><div><div class="big">${win?(fr?'Trouvé en ':'Found in ')+String(STEPS[step][0]).replace('.',fr?',':'.')+' s ! +'+pts:(fr?'Perdu !':'You lose!')}</div><div style="font-size:1.2rem;font-weight:800">${esc(tr.title)} — ${esc(tr.artist.name)}</div><a href="${esc(tr.link)}" target="_blank" rel="noopener" style="color:#ffb3d9;text-decoration:underline">${fr?'Écouter sur Deezer':'Listen on Deezer'} ↗</a></div></div>`;
     $('#act').innerHTML=`<button class="primary" id="nx">🎵 ${fr?'Musique suivante':'Next song'}</button><button id="ls">🔊 ${fr?"Réécouter l'extrait":'Replay clip'}</button>`;
@@ -1496,8 +1498,21 @@ GAME_IMPL.blind=root=>{
   function lose(){reveal(false)}
   $('#pl').onclick=()=>{if(src){stop();return}if(!cur)return;play(over?30:STEPS[step][0])};
   $('#sk').onclick=skip;
-  $('#f').onsubmit=e=>{e.preventDefault();if(over||!cur)return;const v=key($('#w').value);$('#w').value='';if(!v)return;
-    const ok=cur.keys.some(k=>k===v||(k.length>=5&&lev(k,v)<=(k.length>=9?2:1))||(v.length>=6&&k.includes(v)&&v.length>=k.length*.7));
+  let sugs=[],sel=-1,pickId=null,sugT=0,sugQ=0;const sugBox=$('#sug'),inp=$('#w');
+  const hideSug=()=>{sugBox.hidden=true;sugs=[];sel=-1};
+  const drawSug=()=>{if(!sugs.length||over){hideSug();return}sugBox.hidden=false;sugBox.innerHTML=sugs.map((s,i)=>`<button type="button" data-i="${i}" class="${i===sel?'on':''}">${s.img?`<img src="${esc(s.img)}" alt="">`:'<span style="width:38px;text-align:center">🎵</span>'}<span><b>${esc(s.title)}</b><small>${esc(s.artist)}</small></span></button>`).join('');
+    sugBox.querySelectorAll('button').forEach(b=>b.onmousedown=e=>{e.preventDefault();choose(+b.dataset.i)})};
+  const choose=i=>{const s=sugs[i];if(!s)return;inp.value=s.title;pickId=s.id;hideSug();$('#f').requestSubmit()};
+  inp.oninput=()=>{pickId=null;clearTimeout(sugT);const q=inp.value.trim();if(q.length<2){hideSug();return}
+    const kq=key(q);const loc=BT_SONGS.map(e=>e.split('|')).filter(([a,t])=>key(t).includes(kq)).slice(0,3).map(([a,t])=>({title:t,artist:a,id:null}));
+    sugs=loc;sel=-1;drawSug();const my=++sugQ;
+    sugT=setTimeout(async()=>{try{const d=await dzJsonp('/search?q='+encodeURIComponent(q)+'&limit=12');if(my!==sugQ||over)return;const seen=new Set(),out=[];
+      for(const x of (d.data||[])){const ti=clean(x.title)||x.title,k=key(ti)+'|'+key(x.artist.name);if(seen.has(k))continue;seen.add(k);out.push({title:ti,artist:x.artist.name,img:x.album&&x.album.cover_small,id:x.id})}
+      const rest=loc.filter(l=>!seen.has(key(l.title)+'|'+key(l.artist)));sugs=[...out.slice(0,7-Math.min(rest.length,2)),...rest.slice(0,2)];sel=-1;drawSug()}catch(e){}},200)};
+  inp.onkeydown=e=>{if(sugBox.hidden||!sugs.length)return;if(e.key==='ArrowDown'){e.preventDefault();sel=(sel+1)%sugs.length;drawSug()}else if(e.key==='ArrowUp'){e.preventDefault();sel=(sel-1+sugs.length)%sugs.length;drawSug()}else if(e.key==='Enter'&&sel>=0){e.preventDefault();choose(sel)}else if(e.key==='Escape')hideSug()};
+  inp.onblur=()=>setTimeout(hideSug,150);
+  $('#f').onsubmit=e=>{e.preventDefault();hideSug();if(over||!cur)return;const v=key(clean($('#w').value));const pid=pickId;pickId=null;$('#w').value='';if(!v)return;
+    const ok=(pid&&pid===cur.tr.id)||cur.keys.some(k=>k===v||(k.length>=5&&lev(k,v)<=(k.length>=9?2:1))||(v.length>=6&&k.includes(v)&&v.length>=k.length*.7));
     if(ok){reveal(true);return}
     $('#msg').innerHTML=`<span style="color:var(--bad)">❌ ${fr?"Ce n'est pas ça…":'Nope…'}</span>`;fx.shake($('#w'));setTimeout(()=>{if(!over)skip()},350);};
   newRound();
